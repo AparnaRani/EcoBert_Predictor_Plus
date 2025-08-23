@@ -23,6 +23,11 @@ def run_single_experiment(params: dict):
 
     metadata_df = pd.DataFrame([metadata])
     metadata_path = 'data/raw/training_metadata.csv'
+    # --- ADD THIS BLOCK TO CREATE THE DIRECTORY ---
+    # Get the directory part of the path
+    output_dir = os.path.dirname(metadata_path) 
+    # Create the directory if it doesn't exist
+    os.makedirs(output_dir, exist_ok=True)
     if not os.path.exists(metadata_path):
         metadata_df.to_csv(metadata_path, index=False)
     else:
