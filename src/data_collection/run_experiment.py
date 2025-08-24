@@ -23,11 +23,11 @@ def run_single_experiment(params: dict):
 
     metadata_df = pd.DataFrame([metadata])
     metadata_path = 'data/raw/training_metadata.csv'
-    # --- ADD THIS BLOCK TO CREATE THE DIRECTORY ---
-    # Get the directory part of the path
+    
     output_dir = os.path.dirname(metadata_path) 
-    # Create the directory if it doesn't exist
     os.makedirs(output_dir, exist_ok=True)
+    
+    # Save metadata (append if file exists)
     if not os.path.exists(metadata_path):
         metadata_df.to_csv(metadata_path, index=False)
     else:
@@ -45,16 +45,23 @@ def run_single_experiment(params: dict):
         model = AutoModelForSequenceClassification.from_pretrained(metadata['model_name'], num_labels=2)
         tokenizer = AutoTokenizer.from_pretrained(metadata['model_name'])
         dataset = load_dataset(metadata['dataset_name'], split=f"train[:{metadata['num_train_samples']}]")
-
+        
+        # Use the new max_length from params
+        seq_length = metadata.get('max_sequence_length', 512)
+        
         def tokenize_function(examples):
-            return tokenizer(examples['text'], padding="max_length", truncation=True, max_length=512)
+            return tokenizer(examples['text'], padding="max_length", truncation=True, max_length=seq_length)
 
         tokenized_dataset = dataset.map(tokenize_function, batched=True)
+        
+        # Use the new learning_rate from params
+        lr = metadata.get('learning_rate', 2e-5)
 
         training_args = TrainingArguments(
             output_dir=f"./results/{experiment_id}",
             num_train_epochs=metadata['num_epochs'],
             per_device_train_batch_size=metadata['batch_size'],
+            learning_rate=lr, # <-- ADDED
             fp16=metadata.get('fp16', False) and torch.cuda.is_available(),
             report_to="none",
             logging_steps=1000,
