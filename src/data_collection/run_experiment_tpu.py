@@ -17,7 +17,8 @@ def run_single_experiment(params: dict):
     experiment_id = str(uuid.uuid4())
     metadata = params.copy()
     metadata['experiment_id'] = experiment_id
-    metadata['gpu_type'] = f"TPU v{xm.xla_runtime_device_type().split(':')[1]}" if xm.xla_runtime_device_type() else "TPU"
+    # AFTER
+    metadata['gpu_type'] = "TPU v2-8"
 
     print(f"--- Starting Experiment ID: {experiment_id} ---")
     print(f"Parameters: {metadata}")
