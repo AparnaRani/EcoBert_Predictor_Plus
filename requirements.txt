@@ -7,3 +7,4 @@ datasets
 eco2ai
 accelerate
 joblib
+torch_xla
