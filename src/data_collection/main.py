@@ -3,39 +3,21 @@ import itertools
 from .run_experiment import run_single_experiment as run_gpu_experiment
 from .run_experiment_tpu import run_single_experiment as run_tpu_experiment
 
-# --- GPU Experiment Groups ---
+# --- Previous experiment groups remain the same ---
 def get_colab_experiments():
-    # ... (This function is already in your file)
+    # ... (code from before)
     return []
-
 def get_colab_varied_batch():
-    # ... (This function is already in your file)
+    # ... (code from before)
     return []
-
-def get_gcp_experiments():
-    # ... (This function is already in your file)
-    return []
-
-# --- TPU Experiment Groups ---
 def get_tpu_batch_1():
-    models = ['bert-base-uncased', 'roberta-base']
-    num_samples = [30000]
-    batch_sizes = [64, 128]
-    seq_lengths = [128, 256]
-    learning_rates = [5e-5, 3e-5]
-    param_grid = itertools.product(models, num_samples, batch_sizes, seq_lengths, learning_rates)
-    experiments = []
-    for model, samples, batch, seq_len, lr in param_grid:
-        experiments.append({
-            'model_name': model, 'dataset_name': 'imdb', 'num_train_samples': samples,
-            'num_epochs': 1, 'batch_size': batch, 'max_sequence_length': seq_len,
-            'learning_rate': lr, 'bf16': True, 'pue': 1.1
-        })
-    return experiments
+    # ... (code from before)
+    return []
+def get_gcp_experiments():
+    return []
 
-# --- THIS IS THE MISSING FUNCTION ---
+# --- Original TPU Batch 2 (for reference) ---
 def get_tpu_batch_2():
-    """TPU Batch 2: Testing T5, a model well-suited for TPUs."""
     models = ['t5-small']
     num_samples = [50000, 100000]
     batch_sizes = [32, 64]
@@ -49,22 +31,42 @@ def get_tpu_batch_2():
             'bf16': True, 'pue': 1.1
         })
     return experiments
+
+# --- NEW EXPANDED TPU BATCH ---
+def get_tpu_batch_2_expanded():
+    """TPU Batch 2 (Expanded): Adds learning rates for more diversity."""
+    models = ['t5-small']
+    num_samples = [50000, 100000]
+    batch_sizes = [32, 64]
+    seq_lengths = [256, 512]
+    learning_rates = [5e-5, 3e-5, 1e-5] # <-- ADDED DIVERSITY
+    # Total: 1 model * 2 samples * 2 batches * 2 seq_len * 3 lrs = 24 experiments
+    
+    param_grid = itertools.product(models, num_samples, batch_sizes, seq_lengths, learning_rates)
+    experiments = []
+    for model, samples, batch, seq_len, lr in param_grid:
+        experiments.append({
+            'model_name': model, 'dataset_name': 'imdb', 'num_train_samples': samples,
+            'num_epochs': 1, 'batch_size': batch, 'max_sequence_length': seq_len, 
+            'learning_rate': lr, 'bf16': True, 'pue': 1.1
+        })
+    return experiments
 # ------------------------------------
 
 def main():
     # --- CHOOSE WHICH GROUP TO RUN ---
-    RUN_GROUP = 'tpu_2' # <-- Make sure this is set to tpu_2
+    RUN_GROUP = 'tpu_2_expanded' # <-- SET TO RUN THE NEW EXPANDED BATCH
     
     print(f"Selected experiment group: {RUN_GROUP}")
     
     experiment_runner = run_tpu_experiment if RUN_GROUP.startswith('tpu') else run_gpu_experiment
     
-    # --- ADD THE MISSING ENTRY TO THE MAP ---
     group_map = {
         'colab': get_colab_experiments,
         'colab_varied': get_colab_varied_batch,
         'tpu_1': get_tpu_batch_1,
-        'tpu_2': get_tpu_batch_2, # <-- This was missing
+        'tpu_2': get_tpu_batch_2,
+        'tpu_2_expanded': get_tpu_batch_2_expanded, # <-- ADDED ENTRY
         'gcp': get_gcp_experiments,
     }
     experiments_to_run = group_map.get(RUN_GROUP, lambda: [])()
