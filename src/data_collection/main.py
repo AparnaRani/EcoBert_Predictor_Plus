@@ -57,7 +57,7 @@ def get_tpu_batch_1():
 def main():
     """Selects and runs an experiment group."""
     # --- CHOOSE WHICH GROUP TO RUN ---
-    RUN_GROUP = 'tpu_1'  # <-- SET THIS TO RUN THE TPU BATCH
+    RUN_GROUP = 'tpu_2'  # <-- SET THIS TO RUN THE TPU BATCH
     
     print(f"Selected experiment group: {RUN_GROUP}")
     
