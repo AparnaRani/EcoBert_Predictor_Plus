@@ -55,7 +55,7 @@ def get_tpu_batch_2_expanded():
 
 def main():
     # --- CHOOSE WHICH GROUP TO RUN ---
-    RUN_GROUP = 'tpu_2_expanded' # <-- SET TO RUN THE NEW EXPANDED BATCH
+    RUN_GROUP = 'colab_varied' # <-- SET TO RUN THE NEW EXPANDED BATCH
     
     print(f"Selected experiment group: {RUN_GROUP}")
     
