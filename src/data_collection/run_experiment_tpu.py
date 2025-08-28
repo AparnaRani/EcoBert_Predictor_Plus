@@ -17,8 +17,8 @@ def run_single_experiment(params: dict):
     experiment_id = str(uuid.uuid4())
     metadata = params.copy()
     metadata['experiment_id'] = experiment_id
-    # AFTER
-    metadata['gpu_type'] = "TPU v2-8"
+    # This is a robust way to log the hardware type in a TPU environment
+    metadata['gpu_type'] = "TPU v3-8" if "v3" in xm.xla_device_name() else "TPU v2-8"
 
     print(f"--- Starting Experiment ID: {experiment_id} ---")
     print(f"Parameters: {metadata}")
@@ -45,12 +45,20 @@ def run_single_experiment(params: dict):
     try:
         model = AutoModelForSequenceClassification.from_pretrained(metadata['model_name'], num_labels=2)
         tokenizer = AutoTokenizer.from_pretrained(metadata['model_name'])
-        dataset = load_dataset(metadata['dataset_name'], split=f"train[:{metadata['num_train_samples']}]")
         
+        dataset_name = metadata['dataset_name']
+        dataset_config = metadata.get('dataset_config')
+        
+        if dataset_config:
+            dataset = load_dataset(dataset_name, dataset_config, split=f"train[:{metadata['num_train_samples']}]")
+        else:
+            dataset = load_dataset(dataset_name, split=f"train[:{metadata['num_train_samples']}]")
+        
+        text_column = 'sentence' if 'sentence' in dataset.column_names else 'text'
         seq_length = metadata.get('max_sequence_length', 512)
         
         def tokenize_function(examples):
-            return tokenizer(examples['text'], padding="max_length", truncation=True, max_length=seq_length)
+            return tokenizer(examples[text_column], padding="max_length", truncation=True, max_length=seq_length)
 
         tokenized_dataset = dataset.map(tokenize_function, batched=True)
         
@@ -61,8 +69,10 @@ def run_single_experiment(params: dict):
             num_train_epochs=metadata['num_epochs'],
             per_device_train_batch_size=metadata['batch_size'],
             learning_rate=lr,
+            gradient_accumulation_steps=metadata.get('gradient_accumulation_steps', 1),
             tpu_num_cores=8,
             bf16=metadata.get('bf16', True), 
+            save_strategy="no",
             report_to="none",
             logging_steps=1000,
         )
