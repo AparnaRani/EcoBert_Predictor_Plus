@@ -62,6 +62,7 @@ def run_single_experiment(params: dict):
             num_train_epochs=metadata['num_epochs'],
             per_device_train_batch_size=metadata['batch_size'],
             learning_rate=lr, # <-- ADDED
+            gradient_accumulation_steps=metadata.get('gradient_accumulation_steps', 1), # <-- ADD THIS LINE
             fp16=metadata.get('fp16', False) and torch.cuda.is_available(),
             report_to="none",
             logging_steps=1000,

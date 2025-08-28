@@ -86,6 +86,23 @@ def get_tpu_batch_2_expanded():
             'learning_rate': lr, 'bf16': True, 'pue': 1.1
         })
     return experiments
+def get_p100_batch():
+    """A focused batch for P100 GPUs testing gradient accumulation."""
+    models = ['bert-base-uncased', 'roberta-base']
+    num_samples = [30000]
+    batch_sizes = [16, 32]
+    gradient_accumulation_steps = [1, 2, 4]
+    # Total: 2 models * 1 sample * 2 batches * 3 accum_steps = 12 experiments
+    
+    param_grid = itertools.product(models, num_samples, batch_sizes, gradient_accumulation_steps)
+    experiments = []
+    for model, samples, batch, accum_steps in param_grid:
+        experiments.append({
+            'model_name': model, 'dataset_name': 'imdb', 'num_train_samples': samples,
+            'num_epochs': 1, 'batch_size': batch, 'max_sequence_length': 512,
+            'gradient_accumulation_steps': accum_steps, 'fp16': True, 'pue': 1.58
+        })
+    return experiments
 
 def main():
     # --- CHOOSE WHICH GROUP TO RUN ---
