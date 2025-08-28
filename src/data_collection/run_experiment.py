@@ -17,6 +17,7 @@ def run_single_experiment(params: dict):
     metadata = params.copy()
     metadata['experiment_id'] = experiment_id
     metadata['gpu_type'] = torch.cuda.get_device_name(0) if torch.cuda.is_available() else "CPU"
+    # This line is crucial for the T4x2 run
     metadata['num_gpus'] = torch.cuda.device_count() if torch.cuda.is_available() else 0
 
     print(f"--- Starting Experiment ID: {experiment_id} ---")
@@ -45,7 +46,6 @@ def run_single_experiment(params: dict):
         model = AutoModelForSequenceClassification.from_pretrained(metadata['model_name'], num_labels=2)
         tokenizer = AutoTokenizer.from_pretrained(metadata['model_name'])
         
-        # Logic to handle different dataset formats (like GLUE vs IMDb)
         dataset_name = metadata['dataset_name']
         dataset_config = metadata.get('dataset_config')
         
