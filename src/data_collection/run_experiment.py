@@ -17,6 +17,7 @@ def run_single_experiment(params: dict):
     metadata = params.copy()
     metadata['experiment_id'] = experiment_id
     metadata['gpu_type'] = torch.cuda.get_device_name(0) if torch.cuda.is_available() else "CPU"
+    metadata['num_gpus'] = torch.cuda.device_count() if torch.cuda.is_available() else 0
 
     print(f"--- Starting Experiment ID: {experiment_id} ---")
     print(f"Parameters: {metadata}")
@@ -27,7 +28,6 @@ def run_single_experiment(params: dict):
     output_dir = os.path.dirname(metadata_path) 
     os.makedirs(output_dir, exist_ok=True)
     
-    # Save metadata (append if file exists)
     if not os.path.exists(metadata_path):
         metadata_df.to_csv(metadata_path, index=False)
     else:
@@ -44,26 +44,34 @@ def run_single_experiment(params: dict):
     try:
         model = AutoModelForSequenceClassification.from_pretrained(metadata['model_name'], num_labels=2)
         tokenizer = AutoTokenizer.from_pretrained(metadata['model_name'])
-        dataset = load_dataset(metadata['dataset_name'], split=f"train[:{metadata['num_train_samples']}]")
         
-        # Use the new max_length from params
+        # Logic to handle different dataset formats (like GLUE vs IMDb)
+        dataset_name = metadata['dataset_name']
+        dataset_config = metadata.get('dataset_config')
+        
+        if dataset_config:
+            dataset = load_dataset(dataset_name, dataset_config, split=f"train[:{metadata['num_train_samples']}]")
+        else:
+            dataset = load_dataset(dataset_name, split=f"train[:{metadata['num_train_samples']}]")
+        
+        text_column = 'sentence' if 'sentence' in dataset.column_names else 'text'
         seq_length = metadata.get('max_sequence_length', 512)
         
         def tokenize_function(examples):
-            return tokenizer(examples['text'], padding="max_length", truncation=True, max_length=seq_length)
+            return tokenizer(examples[text_column], padding="max_length", truncation=True, max_length=seq_length)
 
         tokenized_dataset = dataset.map(tokenize_function, batched=True)
         
-        # Use the new learning_rate from params
         lr = metadata.get('learning_rate', 2e-5)
 
         training_args = TrainingArguments(
             output_dir=f"./results/{experiment_id}",
             num_train_epochs=metadata['num_epochs'],
             per_device_train_batch_size=metadata['batch_size'],
-            learning_rate=lr, # <-- ADDED
-            gradient_accumulation_steps=metadata.get('gradient_accumulation_steps', 1), # <-- ADD THIS LINE
+            learning_rate=lr,
+            gradient_accumulation_steps=metadata.get('gradient_accumulation_steps', 1),
             fp16=metadata.get('fp16', False) and torch.cuda.is_available(),
+            save_strategy="no",
             report_to="none",
             logging_steps=1000,
         )

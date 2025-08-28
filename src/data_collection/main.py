@@ -106,25 +106,22 @@ def get_p100_batch():
 
 def main():
     # --- CHOOSE WHICH GROUP TO RUN ---
-    # Change this value to run different batches:
-    # 'colab', 'colab_varied', 'tpu_1', 'tpu_2_expanded', 'gcp'
-    RUN_GROUP = 'colab' 
+    RUN_GROUP = 'p100_batch'  # <-- SET TO RUN THE NEW BATCH
     
     print(f"Selected experiment group: {RUN_GROUP}")
     
-    # Conditionally import and select the correct runner (GPU vs TPU)
     if RUN_GROUP.startswith('tpu'):
         from .run_experiment_tpu import run_single_experiment as run_tpu_experiment
         experiment_runner = run_tpu_experiment
     else:
         experiment_runner = run_gpu_experiment
     
-    # Map group names to functions
     group_map = {
         'colab': get_colab_experiments,
         'colab_varied': get_colab_varied_batch,
         'tpu_1': get_tpu_batch_1,
         'tpu_2_expanded': get_tpu_batch_2_expanded,
+        'p100_batch': get_p100_batch, # <-- ADDED ENTRY
         'gcp': get_gcp_experiments,
     }
     experiments_to_run = group_map.get(RUN_GROUP, lambda: [])()
