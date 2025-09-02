@@ -1,0 +1,9 @@
+model_name,dataset_name,num_train_samples,num_epochs,batch_size,max_sequence_length,bf16,pue,experiment_id,gpu_type
+t5-small,imdb,50000,1,32,256,True,1.1,18e48979-b272-4712-a80b-9a4b64961ace,TPU v2-8
+t5-small,imdb,50000,1,32,512,True,1.1,e5b45f45-c37f-4712-a0f5-966e946c7798,TPU v2-8
+t5-small,imdb,50000,1,64,256,True,1.1,7707ff5b-e391-404c-a180-f9482a14f61a,TPU v2-8
+t5-small,imdb,50000,1,64,512,True,1.1,e0dfbe3f-36d0-43e6-9fca-5fecf124a493,TPU v2-8
+t5-small,imdb,100000,1,32,256,True,1.1,5e39d2c5-37e7-4e0e-ba1d-e7a9b16226bf,TPU v2-8
+t5-small,imdb,100000,1,32,512,True,1.1,dc07f96c-25ce-4b0a-be95-d8175a17452c,TPU v2-8
+t5-small,imdb,100000,1,64,256,True,1.1,cc55765a-709e-4753-93eb-4891994c458b,TPU v2-8
+t5-small,imdb,100000,1,64,512,True,1.1,c6eed572-87e4-4405-ab06-c6762be55a9b,TPU v2-8

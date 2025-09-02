@@ -1,0 +1,22 @@
+model_name,dataset_name,num_train_samples,num_epochs,batch_size,max_sequence_length,learning_rate,fp16,pue,experiment_id,gpu_type
+distilbert-base-uncased,imdb,20000,1,16,128,5e-05,True,1.58,a252c928-f34f-48ef-8cec-5b0bbd8ff009,Tesla T4
+distilbert-base-uncased,imdb,20000,1,16,128,3e-05,True,1.58,afec31d6-c9cb-4f38-9b6b-f866aedb3915,Tesla T4
+distilbert-base-uncased,imdb,20000,1,16,128,2e-05,True,1.58,e27a8ffc-26d5-4b06-8045-4238e49427be,Tesla T4
+distilbert-base-uncased,imdb,20000,1,16,128,1e-05,True,1.58,dc048750-c9bc-4b18-ac23-2d83a5435dc1,Tesla T4
+distilbert-base-uncased,imdb,20000,1,32,128,5e-05,True,1.58,68540cfc-2531-4d8c-a4b5-1c8023414303,Tesla T4
+distilbert-base-uncased,imdb,20000,1,32,128,3e-05,True,1.58,9a1a1ce2-cbe0-4326-ac56-1183420d069f,Tesla T4
+distilbert-base-uncased,imdb,20000,1,32,128,2e-05,True,1.58,05c20b67-8d85-44c4-913f-c0eabfa0a404,Tesla T4
+distilbert-base-uncased,imdb,20000,1,32,128,1e-05,True,1.58,6f68bbc4-64b5-41ff-80d4-3d8d4d915010,Tesla T4
+distilbert-base-uncased,imdb,20000,1,16,256,5e-05,True,1.58,5dc0e378-ccdb-44a0-ae5c-be947ad640b6,Tesla T4
+distilbert-base-uncased,imdb,20000,1,16,256,3e-05,True,1.58,e37af653-4ad0-40d8-b1f7-e301251d7468,Tesla T4
+distilbert-base-uncased,imdb,20000,1,16,256,2e-05,True,1.58,696dff88-96dd-4d01-b133-9e8a7afbaee5,Tesla T4
+distilbert-base-uncased,imdb,20000,1,16,256,1e-05,True,1.58,d3a0b849-da2d-443d-99f4-ddbfca52b2a0,Tesla T4
+distilbert-base-uncased,imdb,20000,1,32,256,5e-05,True,1.58,4f98d65d-d543-4ab5-b4dc-53e5349588eb,Tesla T4
+distilbert-base-uncased,imdb,20000,1,32,256,3e-05,True,1.58,68a0a328-d7e3-4b41-841a-10e9e13a019b,Tesla T4
+distilbert-base-uncased,imdb,20000,1,32,256,2e-05,True,1.58,3eba1159-e963-426a-b51f-e75cd643e2c0,Tesla T4
+distilbert-base-uncased,imdb,20000,1,32,256,1e-05,True,1.58,fb409347-a8ca-4020-9c32-ecdeba9f3cfa,Tesla T4
+distilbert-base-uncased,imdb,20000,1,16,512,5e-05,True,1.58,ea41145d-1813-4dfe-a63e-311ebb1f27ad,Tesla T4
+distilbert-base-uncased,imdb,20000,1,16,512,3e-05,True,1.58,21e0dfe1-e5f1-4d90-bb18-91ca3790dfb5,Tesla T4
+distilbert-base-uncased,imdb,20000,1,16,512,2e-05,True,1.58,26943edd-d72e-40b0-ac94-585f08e29995,Tesla T4
+distilbert-base-uncased,imdb,20000,1,16,512,1e-05,True,1.58,e4155bfe-479a-4712-b0e3-f5e3373a0d49,Tesla T4
+distilbert-base-uncased,imdb,20000,1,32,512,5e-05,True,1.58,e7041e72-08fb-43f3-bf41-b1bdf800d751,Tesla T4

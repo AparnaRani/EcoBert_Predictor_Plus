@@ -1,0 +1,25 @@
+model_name,dataset_name,num_train_samples,num_epochs,batch_size,max_sequence_length,learning_rate,bf16,pue,experiment_id,gpu_type
+t5-small,imdb,50000,1,32,256,5e-05,True,1.1,45e536a8-d7fb-4f87-a4a9-b6d092787c0f,TPU v2-8
+t5-small,imdb,50000,1,32,256,3e-05,True,1.1,740fd23f-0ca0-4157-a6c1-dbc9fd53f6de,TPU v2-8
+t5-small,imdb,50000,1,32,256,1e-05,True,1.1,4941767a-1967-4f36-b577-063ff9777bca,TPU v2-8
+t5-small,imdb,50000,1,32,512,5e-05,True,1.1,919f7833-0c8e-4a12-a060-32ffb73416f7,TPU v2-8
+t5-small,imdb,50000,1,32,512,3e-05,True,1.1,4c2de0f1-b05e-479a-b303-2a5bf649d206,TPU v2-8
+t5-small,imdb,50000,1,32,512,1e-05,True,1.1,8b746ec1-8874-4d18-b30c-9a5d75920a1b,TPU v2-8
+t5-small,imdb,50000,1,64,256,5e-05,True,1.1,61ffe289-fc7c-425d-839b-805877cd4248,TPU v2-8
+t5-small,imdb,50000,1,64,256,3e-05,True,1.1,d506f5fc-5e75-4101-ad6c-cdf582559dc7,TPU v2-8
+t5-small,imdb,50000,1,64,256,1e-05,True,1.1,5a2f23fc-a8b3-425c-9197-feae8b2a1526,TPU v2-8
+t5-small,imdb,50000,1,64,512,5e-05,True,1.1,fafc1020-6f1c-4463-950b-e96ec03e26af,TPU v2-8
+t5-small,imdb,50000,1,64,512,3e-05,True,1.1,7927f92d-94cd-4d8a-88ca-6fc88ecbd9e9,TPU v2-8
+t5-small,imdb,50000,1,64,512,1e-05,True,1.1,f7645af3-33b3-44d1-97f1-252f63879287,TPU v2-8
+t5-small,imdb,100000,1,32,256,5e-05,True,1.1,b74d83c4-2d60-47da-a3d8-e8f267b26e23,TPU v2-8
+t5-small,imdb,100000,1,32,256,3e-05,True,1.1,dc1cfb99-ee9e-49aa-9bc7-eb59af9e6dd9,TPU v2-8
+t5-small,imdb,100000,1,32,256,1e-05,True,1.1,4eca5490-257c-4815-a498-6c4fc1bc46d1,TPU v2-8
+t5-small,imdb,100000,1,32,512,5e-05,True,1.1,d8c2f11f-d5a5-450e-806c-5682e7501fee,TPU v2-8
+t5-small,imdb,100000,1,32,512,3e-05,True,1.1,af058b81-43a5-4b6b-9efc-f6ff09d62180,TPU v2-8
+t5-small,imdb,100000,1,32,512,1e-05,True,1.1,c47fb6b9-2491-4152-8890-c7cc502d3d08,TPU v2-8
+t5-small,imdb,100000,1,64,256,5e-05,True,1.1,2a7a1496-3166-4071-be2b-2741f914333a,TPU v2-8
+t5-small,imdb,100000,1,64,256,3e-05,True,1.1,ed5d18dc-ce4c-44f8-a64a-41ba72740e54,TPU v2-8
+t5-small,imdb,100000,1,64,256,1e-05,True,1.1,6018e296-cc77-4ad9-b53b-713f99ff6b18,TPU v2-8
+t5-small,imdb,100000,1,64,512,5e-05,True,1.1,5bc5fbef-2529-4380-998a-fc752b60445b,TPU v2-8
+t5-small,imdb,100000,1,64,512,3e-05,True,1.1,68cc26af-d912-4481-94cb-5dcc7bcd6294,TPU v2-8
+t5-small,imdb,100000,1,64,512,1e-05,True,1.1,8099a1d7-683b-4c99-b2f1-fdef0ff5687f,TPU v2-8

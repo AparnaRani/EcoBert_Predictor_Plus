@@ -22,13 +22,13 @@ def preprocess_data():
     metadata_df = pd.read_csv(os.path.join(raw_data_path, 'training_metadata.csv'))
 
     # Aggregate emissions data
-    emissions_agg = emissions_df.groupby('experiment_description')['co2_emissions'].max().reset_index()
+    emissions_agg = emissions_df.groupby('experiment_description')['CO2_emissions(kg)'].max().reset_index()
     emissions_agg['experiment_id'] = emissions_agg['experiment_description'].str.replace('run_', '')
 
     # Merge data
-    df = pd.merge(metadata_df, emissions_agg[['experiment_id', 'co2_emissions']], on='experiment_id')
+    df = pd.merge(metadata_df, emissions_agg[['experiment_id', 'CO2_emissions(kg)']], on='experiment_id')
 
-    target = 'co2_emissions'
+    target = 'CO2_emissions(kg)'
     features = ['model_name', 'num_train_samples', 'num_epochs', 'batch_size', 'fp16', 'pue', 'gpu_type']
 
     X = df[features]

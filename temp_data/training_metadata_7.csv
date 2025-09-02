@@ -1,0 +1,13 @@
+model_name,dataset_name,num_train_samples,num_epochs,batch_size,max_sequence_length,gradient_accumulation_steps,fp16,pue,experiment_id,gpu_type,num_gpus
+bert-base-uncased,imdb,30000,1,16,512,1,True,1.58,c6e49a7f-1fa6-402e-9971-3e2e39bc71af,Tesla P100-PCIE-16GB,1
+bert-base-uncased,imdb,30000,1,16,512,2,True,1.58,d355920a-c2a4-4010-9258-938fef497a34,Tesla P100-PCIE-16GB,1
+bert-base-uncased,imdb,30000,1,16,512,4,True,1.58,b431f17d-5d27-4bbb-b5eb-e49344d2b330,Tesla P100-PCIE-16GB,1
+bert-base-uncased,imdb,30000,1,32,512,1,True,1.58,7c5edb9a-ffbe-48ec-8fa8-61774eb1a9f0,Tesla P100-PCIE-16GB,1
+bert-base-uncased,imdb,30000,1,32,512,2,True,1.58,c8ca1438-265f-41b8-a183-45fb4fc795e9,Tesla P100-PCIE-16GB,1
+bert-base-uncased,imdb,30000,1,32,512,4,True,1.58,6c9d7583-18db-4142-9fc7-135c59fa152b,Tesla P100-PCIE-16GB,1
+roberta-base,imdb,30000,1,16,512,1,True,1.58,16d9f2ab-57f1-4c73-9798-49b75c942d57,Tesla P100-PCIE-16GB,1
+roberta-base,imdb,30000,1,16,512,2,True,1.58,487fe678-32bc-435d-a430-85835d644c2d,Tesla P100-PCIE-16GB,1
+roberta-base,imdb,30000,1,16,512,4,True,1.58,a32029e3-bd90-4453-a21e-7cb1ecb406d8,Tesla P100-PCIE-16GB,1
+roberta-base,imdb,30000,1,32,512,1,True,1.58,2d244fdf-60bf-4920-9ded-2bb494d9ae01,Tesla P100-PCIE-16GB,1
+roberta-base,imdb,30000,1,32,512,2,True,1.58,3baeb956-1563-455e-be4e-a5946572c429,Tesla P100-PCIE-16GB,1
+roberta-base,imdb,30000,1,32,512,4,True,1.58,ab80473e-c052-4a32-8101-78e341a47628,Tesla P100-PCIE-16GB,1
