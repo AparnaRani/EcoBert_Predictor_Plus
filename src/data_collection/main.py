@@ -101,13 +101,34 @@ def get_tpu_batch_2_expanded():
             'learning_rate': lr, 'bf16': True, 'pue': 1.1
         })
     return experiments
+def get_heavy_load_batch():
+    """
+    A computationally intensive batch designed to generate higher emission values
+    by using a large model, the full dataset, and more epochs.
+    """
+    models = ['bert-large-uncased'] # A much larger model than bert-base
+    num_epochs = [3, 4] # More training epochs
+    batch_sizes = [16, 32] # Standard batch sizes for this model size
+    
+    # Total: 1 model * 2 epoch counts * 2 batch sizes = 4 long experiments
+    param_grid = itertools.product(models, num_epochs, batch_sizes)
+    experiments = []
+    for model, epochs, batch in param_grid:
+        experiments.append({
+            'model_name': model,
+            'dataset_name': 'imdb',
+            'num_train_samples': 25000, # Use the full IMDb training set
+            'num_epochs': epochs,
+            'batch_size': batch,
+            'fp16': True,
+            'pue': 1.58, # PUE for Kaggle
+            'max_sequence_length': 512 # Use the maximum sequence length
+        })
+    return experiments
 
 def main():
     # --- CHOOSE WHICH GROUP TO RUN ---
-    # Change this value to run different batches:
-    # GPU: 'colab', 'colab_varied', 'p100_batch_3', 'multi_gpu_batch'
-    # TPU: 'tpu_1', 'tpu_2_expanded'
-    RUN_GROUP = 'colab' 
+    RUN_GROUP = 'heavy_load' # <-- SET TO RUN THE NEW HEAVY BATCH
     
     print(f"Selected experiment group: {RUN_GROUP}")
     
@@ -126,6 +147,7 @@ def main():
         'tpu_2_expanded': get_tpu_batch_2_expanded,
         'p100_batch_3': get_p100_batch_3,
         'multi_gpu_batch': get_multi_gpu_batch,
+        'heavy_load': get_heavy_load_batch, # <-- ADDED ENTRY
     }
     experiments_to_run = group_map.get(RUN_GROUP, lambda: [])()
         
