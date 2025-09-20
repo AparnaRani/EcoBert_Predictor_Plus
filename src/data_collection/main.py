@@ -164,12 +164,27 @@ if __name__ == "__main__":
 
 # src/data_collection/main.py
 import itertools
+import os
+
+# Always import the GPU runner, as it's the default or primary
 from .run_experiment import run_single_experiment as run_gpu_experiment
-from .run_experiment_tpu import run_single_experiment as run_tpu_experiment
 
-# --- (All your previous get_..._batch functions can be here for reference) ---
+# --- Conditional import for TPU runner ---
+run_tpu_experiment = None # Initialize to None
+try:
+    if os.environ.get('ACCELERATOR_TYPE') == 'TPU' or os.environ.get('COLAB_TPU_ADDR'):
+        # This is a heuristic to detect if we're on a TPU environment
+        # and try to import if needed, to avoid ModuleNotFoundError in GPU envs.
+        from .run_experiment_tpu import run_single_experiment as run_tpu_experiment
+        print("TPU runner imported successfully.")
+    else:
+        print("Not a TPU environment, skipping TPU runner import.")
+except ModuleNotFoundError:
+    print("Warning: torch_xla not found. TPU runner cannot be imported. This is normal for GPU environments.")
+# --- End conditional import ---
 
-# --- NEW HIGH EMISSION ANCHOR BATCH ---
+
+# --- (All your get_..._batch functions go here as before) ---
 def get_high_emission_anchor_batch():
     """A batch designed to produce high emissions (>1kg) using a large model and many epochs."""
     models = ['bert-large-uncased'] # 340 Million parameters
@@ -197,12 +212,20 @@ def main():
     
     print(f"Selected experiment group: {RUN_GROUP}")
     
+    experiment_runner = None
     if RUN_GROUP.startswith('tpu'):
-        from .run_experiment_tpu import run_single_experiment as run_tpu_experiment
-        experiment_runner = run_tpu_experiment
+        if run_tpu_experiment: # Check if the TPU runner was successfully imported
+            experiment_runner = run_tpu_experiment
+        else:
+            print("ERROR: TPU RUNNER WAS SELECTED BUT torch_xla IS NOT AVAILABLE. Cannot run TPU experiments.")
+            return # Exit if TPU selected but not available
     else:
         experiment_runner = run_gpu_experiment
     
+    if experiment_runner is None:
+        print("ERROR: No experiment runner could be determined. Exiting.")
+        return
+
     group_map = {
         # ... (all your previous entries can be here)
         'high_emission_anchor': get_high_emission_anchor_batch, # <-- ADDED ENTRY
