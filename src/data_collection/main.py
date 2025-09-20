@@ -1,4 +1,4 @@
-# src/data_collection/main.py
+'''# src/data_collection/main.py
 import itertools
 # We only import the GPU runner by default. The TPU runner is imported conditionally.
 from .run_experiment import run_single_experiment as run_gpu_experiment
@@ -148,6 +148,64 @@ def main():
         'p100_batch_3': get_p100_batch_3,
         'multi_gpu_batch': get_multi_gpu_batch,
         'heavy_load': get_heavy_load_batch, # <-- ADDED ENTRY
+    }
+    experiments_to_run = group_map.get(RUN_GROUP, lambda: [])()
+        
+    print(f"Total experiments to run: {len(experiments_to_run)}")
+    
+    for params in experiments_to_run:
+        experiment_runner(params)
+    
+    print(f"All experiments for group '{RUN_GROUP}' have been completed.")
+
+if __name__ == "__main__":
+    main()
+'''
+
+# src/data_collection/main.py
+import itertools
+from .run_experiment import run_single_experiment as run_gpu_experiment
+from .run_experiment_tpu import run_single_experiment as run_tpu_experiment
+
+# --- (All your previous get_..._batch functions can be here for reference) ---
+
+# --- NEW HIGH EMISSION ANCHOR BATCH ---
+def get_high_emission_anchor_batch():
+    """A batch designed to produce high emissions (>1kg) using a large model and many epochs."""
+    models = ['bert-large-uncased'] # 340 Million parameters
+    num_epochs = [3, 4, 5] # Train for a long time
+    batch_sizes = [16, 32]
+    # Total: 1 model * 3 epoch counts * 2 batches = 6 very long experiments
+    
+    param_grid = itertools.product(models, num_epochs, batch_sizes)
+    experiments = []
+    for model, epochs, batch in param_grid:
+        experiments.append({
+            'model_name': model,
+            'dataset_name': 'imdb',
+            'num_train_samples': 25000, # Use the full dataset
+            'num_epochs': epochs,
+            'batch_size': batch,
+            'fp16': True,
+            'pue': 1.58
+        })
+    return experiments
+
+def main():
+    # --- CHOOSE WHICH GROUP TO RUN ---
+    RUN_GROUP = 'high_emission_anchor' # <-- SET TO RUN THE NEW BATCH
+    
+    print(f"Selected experiment group: {RUN_GROUP}")
+    
+    if RUN_GROUP.startswith('tpu'):
+        from .run_experiment_tpu import run_single_experiment as run_tpu_experiment
+        experiment_runner = run_tpu_experiment
+    else:
+        experiment_runner = run_gpu_experiment
+    
+    group_map = {
+        # ... (all your previous entries can be here)
+        'high_emission_anchor': get_high_emission_anchor_batch, # <-- ADDED ENTRY
     }
     experiments_to_run = group_map.get(RUN_GROUP, lambda: [])()
         
