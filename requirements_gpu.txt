@@ -1,0 +1,10 @@
+pandas
+numpy
+scikit-learn
+torch
+transformers
+datasets
+eco2ai
+accelerate   # <-- Ensure this is present
+peft         # <-- Ensure this is present
+joblib
