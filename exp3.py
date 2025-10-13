@@ -1,4 +1,4 @@
-# run_gpt2_xl_exp_4.py (Designed for MAXIMIZED HIGH EMISSIONS)
+# run_gpt2_xl_exp_4.py (Designed for MAXIMIZED HIGH EMISSIONS within P100/16GB constraints)
 import os
 import uuid
 import pandas as pd
@@ -120,22 +120,23 @@ def run_gpt2_xl_lora_experiment(params: dict):
 
 if __name__ == '__main__':
     # --- PARAMETERS FOR THIS SPECIFIC GPT-2 XL RUN (Experiment 4) ---
-    # These parameters are chosen to MAXIMIZE emissions by making the run very long.
+    # These parameters are chosen to MAXIMIZE emissions by making the run very long,
+    # while also ensuring it *fits* within Kaggle's P100 (16GB) memory.
     current_experiment_params = {
         'model_name': 'gpt2-xl',
         'dataset_name': 'imdb',
         'fp16': True,
         'pue': 1.58,
-        'learning_rate': 2e-4,              
-        'max_sequence_length': 512,
-        'dataset_config': None,
+        'learning_rate': 2e-4,
 
-        # --- Specific parameters for THIS individual run's profile ---
-        # Designed to be a very long, high-emission run
-        'num_train_samples': 25000,         # Full dataset size
-        'num_epochs': 20,                   # VERY HIGH EPOCHS - this should take many hours
-        'batch_size': 4,                    # Small batch size to manage memory on P100/T4
-        'gradient_accumulation_steps': 8,   # High accumulation steps (effective batch size 32 (4*8))
+        # --- ADJUSTED FOR KAGGLE P100 (16GB) ---
+        'max_sequence_length': 256, # Reduced from 512 to significantly cut memory
+        'num_train_samples': 25000, # Keep full dataset to maximize computation
+        'num_epochs': 50,           # Increased from 20 to 50 for longer runtime (max emissions)
+        'batch_size': 1,            # Drastically reduced from 4 to 1 for memory
+        'gradient_accumulation_steps': 16, # Increased from 8 (effective batch size 1*16=16)
+
+        'dataset_config': None, # Keep as is
     }
 
     # --- Create data/raw directory if it doesn't exist (for eco2ai's internal usage) ---
