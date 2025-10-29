@@ -1,129 +1,101 @@
+# File: D:\EcoPredictor+\src\preprocessing\build_features.py
+
 import pandas as pd
+import numpy as np
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler, OneHotEncoder, QuantileTransformer # Added QuantileTransformer
+from sklearn.preprocessing import StandardScaler, QuantileTransformer, OneHotEncoder
 from sklearn.compose import ColumnTransformer
-from sklearn.pipeline import Pipeline # Added Pipeline for nested transformers
+from sklearn.pipeline import Pipeline
 import joblib
 import os
-import numpy as np # Added for model_param_map and potential log transformation
+import logging
 
-def preprocess_data():
-    print("Starting data preprocessing...")
-    # Define paths
-    raw_data_path = r'D:\EcoPredictor+\data\raw'
-    processed_data_path = r'D:\EcoPredictor+\data\processed'
-    models_path = r'D:\EcoPredictor+\models'
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
-    # Ensure output directories exist
+def build_features():
+    logger.info("Starting feature building process...")
+
+    # --- ABSOLUTE PATH DEFINITIONS ---
+    # IMPORTANT: Set this to the actual root path of your 'EcoPredictor+' project
+    project_root = r'D:\EcoPredictor+' 
+    
+    raw_data_path = os.path.join(project_root, 'data', 'raw')
+    processed_data_path = os.path.join(project_root, 'data', 'processed') # Points to project root /data/processed
+    models_path = os.path.join(project_root, 'models') # Points to project root /models
+    # --- END ABSOLUTE PATH DEFINITIONS ---
+
     os.makedirs(processed_data_path, exist_ok=True)
     os.makedirs(models_path, exist_ok=True)
 
-    # --- Define parameter counts for each model type ---
-    # This dictionary should reflect the actual parameter counts for the models you used.
-    # IMPORTANT: Ensure 'model_parameters' column is consistently named if it's already in your metadata.
-    model_param_map = {
-        'distilbert-base-uncased': 66_000_000,
-        'bert-base-uncased': 110_000_000,
-        'roberta-base': 125_000_000,
-        't5-small': 60_000_000,
-        'gpt2-xl': 1_500_000_000 # 1.5 Billion parameters
-    }
+    try:
+        # Load the cleaned_merged_data.csv from project root's 'data/raw' folder
+        df = pd.read_csv(os.path.join(raw_data_path, 'cleaned_merged_data.csv'))
+        logger.info(f"Loaded {len(df)} samples from cleaned_merged_data.csv.")
+    except FileNotFoundError:
+        logger.error(f"Error: 'cleaned_merged_data.csv' not found in {raw_data_path}. Please run make_dataset.py first.")
+        return
+    except Exception as e:
+        logger.error(f"An error occurred during data loading: {e}")
+        return
 
-    # Load data
-    emissions_df = pd.read_csv(os.path.join(raw_data_path, 'emissions.csv'))
-    metadata_df = pd.read_csv(os.path.join(raw_data_path, 'training_metadata.csv'))
+    # --- Feature Engineering for model_parameters ---
+    df['model_parameters'] = pd.to_numeric(df['model_parameters'])
 
-    # Aggregate emissions data
-    # NOTE: Assuming 'experiment_description' maps directly to an experiment ID or a unique run.
-    # If your eco2ai log produces multiple entries per experiment, taking the max CO2 is a reasonable approach.
-    emissions_agg = emissions_df.groupby('experiment_description')['CO2_emissions(kg)'].max().reset_index()
-    emissions_agg['experiment_id'] = emissions_agg['experiment_description'].str.replace('run_', '') # Adjust if run_ ID format is different
+    # Define features (X) and target (y)
+    X = df.drop(columns=['experiment_id', 'CO2_emissions(kg)'])
+    y = df['CO2_emissions(kg)']
 
-    # Merge data
-    df = pd.merge(metadata_df, emissions_agg[['experiment_id', 'CO2_emissions(kg)']], on='experiment_id')
+    # --- APPLY LOG TRANSFORMATION TO THE TARGET VARIABLE (y) ---
+    logger.info("Applying log1p transformation to the target variable 'CO2_emissions(kg)'...")
+    y_transformed = np.log1p(y) # y_transformed will be used for training
 
-    # --- NEW: Add 'model_parameters' feature ---
-    # We will derive this from 'model_name' using our map.
-    # Ensure 'model_name' column exists in your merged df.
-    if 'model_name' in df.columns:
-        df['model_parameters'] = df['model_name'].map(model_param_map)
-        # Handle any model names not in your map (e.g., set to a default or drop rows)
-        if df['model_parameters'].isnull().any():
-            print("Warning: Some 'model_name' entries not found in 'model_param_map'. Consider handling them.")
-            # Option: df = df.dropna(subset=['model_parameters']) # Drop rows with unknown models
-            # Option: df['model_parameters'] = df['model_parameters'].fillna(some_default_value) # Fill with default
-    else:
-        print("Error: 'model_name' column not found in merged DataFrame. Cannot add 'model_parameters'.")
-        return # Exit or raise error if 'model_name' is missing
+    # Save the original y for test evaluation later
+    y_original = y.copy()
 
-    # --- NEW: Update features list to include 'model_parameters' ---
-    target = 'CO2_emissions(kg)'
-    features = [
-        'model_parameters', # NEW KEY FEATURE
-        'model_name',       # Keep as categorical for now, might be useful
-        'num_train_samples',
-        'num_epochs',
-        'batch_size',
-        'fp16',
-        'pue',
-        'gpu_type',
-        # ADD ANY OTHER NUMERICAL FEATURES YOU MIGHT HAVE COLLECTED
-        'learning_rate', # If you collected this
-        'max_sequence_length', # If you collected this
-        'gradient_accumulation_steps', # If you collected this
-        'num_gpus' # Use 'num_gpus' from your metadata, not 'num_gpus_used'
-    ]
+    # Split data into training and testing sets
+    X_train, X_test, y_train_transformed, y_test_transformed, y_train_original, y_test_original = train_test_split(
+        X, y_transformed, y_original, test_size=0.2, random_state=42
+    )
+    logger.info(f"Data split: X_train={len(X_train)}, X_test={len(X_test)}, y_train={len(y_train_transformed)}, y_test={len(y_test_transformed)}")
 
-    # Filter features to only those present in the DataFrame
-    features = [f for f in features if f in df.columns]
+    # Define preprocessing steps for different feature types
+    numerical_features = ['num_train_samples', 'num_epochs', 'batch_size', 'max_sequence_length',
+                          'learning_rate', 'gradient_accumulation_steps', 'num_gpus', 'pue']
+    
+    skewed_numerical_features = ['model_parameters']
+    
+    categorical_features = ['model_name', 'gpu_type','dataset_name']
+    
+    boolean_features = ['fp16']
 
-    X = df[features]
-    y = df[target]
-
-    # Split data
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-    # --- NEW: Define preprocessing pipeline with specific treatment for 'model_parameters' ---
-    # Separate numerical features that need log transform + scaling vs. just scaling
-    numerical_features_log_scale = ['model_parameters']
-    numerical_features_standard_scale = [f for f in X.select_dtypes(include=['int64', 'float64']).columns if f not in numerical_features_log_scale]
-
-    # Handle boolean features (like 'fp16') by converting to int and including in standard scale
-    boolean_features = X.select_dtypes(include=['bool']).columns
-    for col in boolean_features:
-        X_train[col] = X_train[col].astype(int)
-        X_test[col] = X_test[col].astype(int)
-        numerical_features_standard_scale.append(col)
-
-
-    categorical_features = X.select_dtypes(include=['object']).columns
-
+    # Create the preprocessing pipeline
     preprocessor = ColumnTransformer(
         transformers=[
-            ('log_scale_params', Pipeline([
-                # QuantileTransformer makes data Gaussian-like, good for models and handles outliers better than simple log.
-                ('log', QuantileTransformer(output_distribution='normal', random_state=42)),
-                ('scaler', StandardScaler())
-            ]), numerical_features_log_scale),
-            ('num', StandardScaler(), numerical_features_standard_scale),
-            ('cat', OneHotEncoder(handle_unknown='ignore'), categorical_features)
+            ('num_standard', StandardScaler(), numerical_features),
+            ('num_quantile', QuantileTransformer(output_distribution='normal'), skewed_numerical_features),
+            ('cat', OneHotEncoder(handle_unknown='ignore'), categorical_features),
+            ('bool', OneHotEncoder(handle_unknown='ignore', drop='if_binary'), boolean_features)
         ],
-        remainder='passthrough' # Catches any features not explicitly handled, which is fine if no other features.
+        remainder='passthrough'
     )
 
-    # Fit preprocessor and save it
-    print("Fitting preprocessor...")
+    # Fit preprocessor on training data only
     preprocessor.fit(X_train)
-    joblib.dump(preprocessor, os.path.join(models_path, 'preprocessor.joblib'))
-    print("Preprocessor fitted and saved.")
+    logger.info("Preprocessor fitted on training data.")
 
-    # Save the raw splits for later transformation by train_model.py
+    # Save the preprocessor to project root 'models' folder
+    joblib.dump(preprocessor, os.path.join(models_path, 'preprocessor.joblib'))
+    logger.info(f"Preprocessor saved to {os.path.join(models_path, 'preprocessor.joblib')}.")
+
+    # Save raw (untransformed features) splits and transformed targets to project root 'data/processed'
     X_train.to_csv(os.path.join(processed_data_path, 'X_train_raw.csv'), index=False)
     X_test.to_csv(os.path.join(processed_data_path, 'X_test_raw.csv'), index=False)
-    y_train.to_csv(os.path.join(processed_data_path, 'y_train.csv'), index=False)
-    y_test.to_csv(os.path.join(processed_data_path, 'y_test.csv'), index=False)
+    y_train_transformed.to_csv(os.path.join(processed_data_path, 'y_train_transformed.csv'), index=False)
+    y_test_transformed.to_csv(os.path.join(processed_data_path, 'y_test_transformed.csv'), index=False)
+    y_test_original.to_csv(os.path.join(processed_data_path, 'y_test_original.csv'), index=False)
 
-    print("Data preprocessing complete. Raw splits saved.")
+    logger.info("Raw data features splits and transformed target variables saved successfully to data/processed.")
 
 if __name__ == "__main__":
-    preprocess_data()
+    build_features()
