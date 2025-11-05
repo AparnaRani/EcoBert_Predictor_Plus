@@ -1,64 +1,105 @@
-# src/modeling/predict.py
 import pandas as pd
+import numpy as np
 import joblib
-import warnings
 import os
+import logging
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.metrics import r2_score # Import R2 to display in title
 
-# Suppress warnings from scikit-learn about feature names
-warnings.filterwarnings("ignore", category=UserWarning)
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
-def predict_emissions(input_data: dict):
+def generate_visuals():
     """
-    Loads the trained model and preprocessor to predict CO2 emissions for a new set of parameters.
+    Loads the saved model and preprocessor to generate and display
+    the final evaluation plots.
     """
-    models_path = 'models'
+    logger.info("Starting visualization generation...")
+
+    # --- Define Paths ---
+    project_root = r'D:\EcoPredictor+' 
+    processed_data_path = os.path.join(project_root, 'data', 'processed')
+    models_path = os.path.join(project_root, 'models')
+
+    # --- Load Artifacts ---
     try:
-        model = joblib.load(os.path.join(models_path, 'emission_predictor_model.joblib'))
+        # 1. Load the trained model
+        final_model = joblib.load(os.path.join(models_path, 'emission_predictor_model.joblib'))
+        model_name = type(final_model).__name__
+        logger.info(f"Loaded '{model_name}' from 'emission_predictor_model.joblib'")
+
+        # 2. Load the preprocessor
         preprocessor = joblib.load(os.path.join(models_path, 'preprocessor.joblib'))
-        print("✅ Model and preprocessor loaded successfully.")
-    except FileNotFoundError:
-        print("❌ Error: Model or preprocessor not found. Please run the training pipeline first.")
-        return None
+        logger.info("Loaded 'preprocessor.joblib'")
 
-    input_df = pd.DataFrame([input_data])
-    
-    print("⚙️  Preprocessing input features...")
-    input_processed = preprocessor.transform(input_df)
+        # 3. Load the raw test data and the original (non-transformed) test target
+        X_test_raw = pd.read_csv(os.path.join(processed_data_path, 'X_test_raw.csv'))
+        y_test_original = pd.read_csv(os.path.join(processed_data_path, 'y_test_original.csv')).values.ravel()
+        logger.info("Loaded test data (X_test_raw.csv, y_test_original.csv)")
 
-    print("🔮 Making prediction...")
-    prediction = model.predict(input_processed)
-    
-    predicted_co2 = prediction[0]
-    
-    return predicted_co2
+    except FileNotFoundError as e:
+        logger.error(f"Error loading model artifacts: {e}. Please run train_model.py first.")
+        return
+    except Exception as e:
+        logger.error(f"An unexpected error occurred: {e}")
+        return
 
-if __name__ == '__main__':
-    # --- DEFINE YOUR SCENARIO TO PREDICT HERE ---
-    scenario_1 = {
-        'model_name': 'roberta-base',
-        'dataset_name': 'imdb',
-        'dataset_config': None,
-        'num_train_samples': 50000,
-        'num_epochs': 2,
-        'batch_size': 32,
-        'fp16': True,
-        'bf16': False,
-        'pue': 1.4,
-        # Corrected to a GPU the model was actually trained on
-        'gpu_type': 'Tesla P100', 
-        'learning_rate': 3e-5,
-        'max_sequence_length': 512,
-        'gradient_accumulation_steps': 1,
-        'num_gpus': 1
-    }
-    # ---------------------------------------------
+    # --- Re-create Predictions ---
     
-    print("\n--- EcoBERT Predictor+ ---")
-    print(f"Calculating emissions for the defined scenario...")
-    
-    predicted_emissions = predict_emissions(scenario_1)
+    # 1. Apply preprocessor
+    X_test = preprocessor.transform(X_test_raw)
+    logger.info("Applied preprocessor to X_test_raw.")
 
-    if predicted_emissions is not None:
-        print("\n--- PREDICTION RESULT ---")
-        print(f"Predicted CO2 Emissions: {predicted_emissions:.4f} kg")
-        print("-------------------------\n")
+    # 2. Predict on the log-scale
+    predictions_log = final_model.predict(X_test)
+    
+    # 3. Inverse-transform to get original kg scale
+    predictions_original = np.expm1(predictions_log)
+    predictions_original[predictions_original < 0] = 0 # Handle negatives
+    logger.info("Generated predictions on original scale.")
+
+    # 4. Calculate R2 for the plot title
+    r2 = r2_score(y_test_original, predictions_original)
+    logger.info(f"Loaded model {model_name} has R-squared: {r2:.4f}")
+
+    # --- Generate Visualization (copied from train_model.py) ---
+    logger.info("Generating prediction visualization...")
+    plt.figure(figsize=(14, 6))
+
+    # Plot 1: Actual vs. Predicted values (Original Scale)
+    plt.subplot(1, 2, 1)
+    sns.scatterplot(x=y_test_original, y=predictions_original, alpha=0.6)
+    plt.plot([y_test_original.min(), y_test_original.max()], [y_test_original.min(), y_test_original.max()], 'r--', lw=2, label='Perfect Prediction')
+    plt.xlabel("Actual CO2 Emissions (kg)", fontsize=12)
+    plt.ylabel("Predicted CO2 Emissions (kg)", fontsize=12)
+    # Add R2 to the title for clarity
+    plt.title(f"Actual vs. Predicted (Test Set)\nModel: {model_name} (R2: {r2:.4f})", fontsize=14)
+    plt.legend()
+    plt.grid(True, linestyle=':', alpha=0.7)
+
+    # Plot 2: Distribution of Residuals (Original Scale)
+    plt.subplot(1, 2, 2)
+    residuals = y_test_original - predictions_original
+    sns.histplot(residuals, kde=True, bins=30, color='skyblue')
+    plt.axvline(0, color='red', linestyle='--', label='Zero Residual')
+    plt.xlabel("Residuals (Actual - Predicted) (kg)", fontsize=12)
+    plt.ylabel("Frequency", fontsize=12)
+    plt.title(f"Distribution of Residuals\nModel: {model_name}", fontsize=14)
+    plt.legend()
+    plt.grid(True, linestyle=':', alpha=0.7)
+
+    plt.tight_layout() 
+    
+    # Save a new copy of the plot
+    plot_save_path = os.path.join(models_path, 'test_predictions_plot_regenerated.png')
+    plt.savefig(plot_save_path) 
+    logger.info(f"Prediction plot saved to {plot_save_path}.")
+    
+    # --- Display the plot ---
+    logger.info("Displaying plot...")
+    plt.show()
+
+if __name__ == "__main__":
+    generate_visuals()
