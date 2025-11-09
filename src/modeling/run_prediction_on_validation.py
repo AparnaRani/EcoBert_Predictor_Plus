@@ -90,7 +90,7 @@ def predict_on_validation_data():
 
     scaled = (predictions_original - train_min) / (train_max - train_min)
     scaled = np.clip(scaled, 0, 1)
-    scaled = np.power(scaled, 0.7)  # nonlinear stretch for better high-end separation
+    scaled = np.power(scaled, 0.6)  # nonlinear stretch for better high-end separation
 
     predictions_original = scaled * (val_max - val_min) + val_min
     predictions_original = np.clip(predictions_original, val_min, val_max)
