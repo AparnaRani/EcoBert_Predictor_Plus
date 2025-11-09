@@ -42,6 +42,14 @@ def build_features():
 
     # --- Feature Engineering for model_parameters ---
     df['model_parameters'] = pd.to_numeric(df['model_parameters'])
+    # === New Features to Better Capture Compute Scaling ===
+    df['log_model_parameters'] = np.log1p(df['model_parameters'])
+
+    # Scaled compute load proxy (captures combined effect of model size, seq length, and data)
+    df['scaled_load'] = (
+        df['model_parameters'] * df['max_sequence_length'] * df['num_train_samples']
+    )
+    df['scaled_load'] = np.log1p(df['scaled_load'])
 
     # --- ADD LOG-TRANSFORMED VERSION to reduce extreme range ---
     df["log_model_parameters"] = np.log1p(df["model_parameters"])
@@ -79,9 +87,9 @@ def build_features():
 
     # Define preprocessing steps for different feature types
     numerical_features = ['num_train_samples', 'num_epochs', 'batch_size', 'max_sequence_length',
-                          'learning_rate', 'gradient_accumulation_steps', 'num_gpus', 'pue']
+                          'learning_rate', 'gradient_accumulation_steps', 'num_gpus', 'pue','scaled_load' ]
     
-    skewed_numerical_features = ['log_model_parameters']
+    skewed_numerical_features = ['log_model_parameters','log_model_parameters']
 
     
     categorical_features = ['model_name', 'gpu_type','dataset_name']

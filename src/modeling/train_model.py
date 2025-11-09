@@ -4,7 +4,7 @@ from xgboost import XGBRegressor # Make sure you have xgboost installed: pip ins
 from lightgbm import LGBMRegressor # Make sure you have lightgbm installed: pip install lightgbm
 from sklearn.linear_model import LinearRegression, HuberRegressor
 from sklearn.neural_network import MLPRegressor # For a simple neural network option
-
+from sklearn.linear_model import Ridge
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score, make_scorer
 from sklearn.model_selection import KFold, GridSearchCV
 import numpy as np
@@ -64,14 +64,18 @@ def train_and_evaluate():
     logger.info("\n--- Initiating Model Selection and Hyperparameter Tuning ---")
 
     # Define a dictionary of machine learning models to be evaluated
+    
+
     models_to_evaluate = {
         'RandomForestRegressor': RandomForestRegressor(random_state=42, n_jobs=-1),
         'XGBoostRegressor': XGBRegressor(random_state=42, n_jobs=-1, objective='reg:squarederror', eval_metric='mae'),
         'LGBMRegressor': LGBMRegressor(random_state=42, n_jobs=-1),
         'GradientBoostingRegressor': GradientBoostingRegressor(random_state=42),
-        'HuberRegressor': HuberRegressor(max_iter=1000), # Robust to outliers
-        'MLPRegressor': MLPRegressor(random_state=42, max_iter=1000, hidden_layer_sizes=(100, 50), early_stopping=True, verbose=False) 
+        'HuberRegressor': HuberRegressor(max_iter=1000),
+        'MLPRegressor': MLPRegressor(random_state=42, max_iter=2000, hidden_layer_sizes=(64, 32), early_stopping=True, verbose=False),
+        'RidgeRegressor': Ridge(alpha=1.0)  # 👈 NEW: adds extrapolative linear model
     }
+
 
     # Define hyperparameter grids for each model for GridSearchCV.
     param_grids = {
@@ -178,6 +182,29 @@ def train_and_evaluate():
     model_save_path = os.path.join(models_path, 'emission_predictor_model.joblib')
     joblib.dump(final_model, model_save_path)
     logger.info(f"Best trained model ({best_model_name}) saved successfully to {model_save_path}.")
+    # --- Optional: Blend with Ridge for smoother generalization ---
+    try:
+        ridge = Ridge(alpha=1.0)
+        ridge.fit(X_train, y_train)
+
+        # Blend predictions: 80% from best model, 20% from ridge
+        blend_pred_norm = 0.8 * final_model.predict(X_test) + 0.2 * ridge.predict(X_test)
+
+        # Convert back to original scale
+        y_mean = np.load(os.path.join(models_path, 'target_mean.npy'))
+        y_std = np.load(os.path.join(models_path, 'target_std.npy'))
+        blend_pred_log = blend_pred_norm * y_std + y_mean
+        blend_pred_original = np.expm1(blend_pred_log)
+        blend_pred_original[blend_pred_original < 0] = 0
+
+        blend_rmse = np.sqrt(mean_squared_error(y_test_original, blend_pred_original))
+        blend_mae = mean_absolute_error(y_test_original, blend_pred_original)
+        blend_r2 = r2_score(y_test_original, blend_pred_original)
+
+        logger.info("\n--- Blended Model (Best + Ridge) Performance ---")
+        logger.info(f"RMSE: {blend_rmse:.4f} kg, MAE: {blend_mae:.4f} kg, R2: {blend_r2:.4f}")
+    except Exception as e:
+        logger.warning(f"Blending step skipped due to error: {e}")
 
     # --- Visualize Predictions and Residuals (on Original Scale) ---
     logger.info("Generating prediction visualization...")
