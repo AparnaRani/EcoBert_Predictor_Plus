@@ -1,0 +1,18 @@
+model_name,dataset_name,num_train_samples,num_epochs,batch_size,fp16,pue,experiment_id,gpu_type,learning_rate,max_sequence_length,gradient_accumulation_steps,num_gpus,dataset_config,model_parameters
+distilbert-base-uncased,imdb,7000,1,32,True,1.58,7c63b1de-e69f-4527-8d30-3700e45fa755,Tesla P100-PCIE-16GB,3e-05,128,1,1,,66955010
+distilbert-base-uncased,imdb,20000,2,16,True,1.58,6c09b576-ca3f-4c86-9113-856466a0aabc,Tesla P100-PCIE-16GB,2e-05,256,2,1,,66955010
+distilbert-base-uncased,imdb,5000,3,8,True,1.58,d06aacdc-d6d9-4793-9a28-6b38abb655df,Tesla P100-PCIE-16GB,5e-05,512,4,1,,66955010
+bert-base-uncased,imdb,8000,1,16,True,1.58,50f59f6e-72c8-4d33-946a-f5e9f64f53b9,Tesla P100-PCIE-16GB,3e-05,128,2,1,,109483778
+bert-base-uncased,imdb,22000,2,8,True,1.58,fc9770f1-af54-4bcb-80d5-9f9b213e6881,Tesla P100-PCIE-16GB,2e-05,256,4,1,,109483778
+bert-base-uncased,imdb,10000,1,4,True,1.58,ba66b578-0632-4064-937d-09c86013866c,Tesla P100-PCIE-16GB,4e-05,512,8,1,,109483778
+bert-large-uncased,imdb,12000,1,16,True,1.58,7f80ba36-26aa-4a49-9d17-2851f4450e7f,Tesla P100-PCIE-16GB,1e-05,128,2,1,,335141890
+bert-large-uncased,imdb,30000,1,8,True,1.58,7e7380ef-1352-4cf8-9571-b08fceb30d6d,Tesla P100-PCIE-16GB,2e-05,256,4,1,,335141890
+bert-large-uncased,imdb,15000,2,4,True,1.58,913f07d3-959b-4a24-a40c-278c3cacc73f,Tesla P100-PCIE-16GB,3e-05,512,8,1,,335141890
+gpt2-medium,imdb,9000,1,16,True,1.58,33ab34d9-40dc-4a53-b3c9-1c347b316fbb,Tesla P100-PCIE-16GB,1e-05,128,2,1,,354823168
+gpt2-medium,imdb,28000,1,8,True,1.58,3ccc3d97-72d0-485d-90f7-10c523f550be,Tesla P100-PCIE-16GB,2e-05,256,4,1,,354823168
+gpt2-medium,imdb,12000,2,4,True,1.58,36d50309-238a-44d2-81eb-0a021dab9bbd,Tesla P100-PCIE-16GB,3e-05,512,8,1,,354823168
+gpt2-large,imdb,15000,1,8,True,1.58,40f545b3-ab5a-4f6f-8984-c3c8f746b18b,Tesla P100-PCIE-16GB,0.0002,128,4,1,,774030080
+gpt2-large,imdb,30000,1,4,True,1.58,5961646b-a9c3-4cf4-a2f2-fa337ccd4d50,Tesla P100-PCIE-16GB,0.0002,256,8,1,,774030080
+gpt2-large,imdb,20000,2,2,True,1.58,1d32f630-676e-449b-83f5-4416fce571f5,Tesla P100-PCIE-16GB,0.0002,512,16,1,,774030080
+gpt2-xl,imdb,18000,1,4,True,1.58,c2e8a55a-5336-4383-a511-c258b7d03830,Tesla P100-PCIE-16GB,0.0002,128,8,1,,1557611008
+gpt2-xl,imdb,35000,1,2,True,1.58,45110662-27d7-424f-b257-6ea6488fa791,Tesla P100-PCIE-16GB,0.0002,256,16,1,,1557611008

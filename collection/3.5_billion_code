@@ -11,8 +11,7 @@ import torch
 import eco2ai
 import logging
 from transformers import (
-    # <<< FIX: Import AutoModelForCausalLM >>>
-    AutoModelForCausalLM, 
+    AutoModelForSequenceClassification,
     AutoTokenizer,
     Trainer,
     TrainingArguments,
@@ -29,6 +28,16 @@ import time
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
+# --- 4. Define File Paths ---
+# We will append to our main CSV files
+METADATA_PATH = '/kaggle/working/training_metadata.csv'
+EMISSIONS_PATH = '/kaggle/working/emissions.csv'
+CHECKPOINT_DIR = '/kaggle/working/results/' 
+os.makedirs(os.path.dirname(METADATA_PATH), exist_ok=True)
+os.makedirs(os.path.dirname(EMISSIONS_PATH), exist_ok=True)
+os.makedirs(CHECKPOINT_DIR, exist_ok=True)
+
+
 # --- 4.5. Define GPU and Model Parameters ---
 def get_gpu_type():
     """Detects and returns the name of the available GPU."""
@@ -44,10 +53,10 @@ def get_gpu_type():
 # Parameter count for microsoft/phi-3-mini-4k-instruct
 PHI_3_MINI_PARAMS = 3821811712 # 3.8B params
 
-# --- 5. Main Experiment Function (with QLoRA, Your Logic) ---
-def run_single_lora_experiment(params: dict):
+# --- 5. Main Experiment Function (with QLoRA) ---
+def run_single_experiment(params: dict):
     """
-    Runs a single QLoRA experiment and saves results to a unique folder.
+    Runs a single QLoRA experiment and appends results to common CSV files.
     Ensures emissions are saved even if stopped/failed via finally block.
     """
     experiment_id = str(uuid.uuid4())
@@ -59,15 +68,8 @@ def run_single_lora_experiment(params: dict):
     print(f"\n--- Starting Experiment ID: {experiment_id} ---")
     print(f"Parameters: {metadata}")
 
-    # --- Define UNIQUE output files for THIS single experiment ---
-    output_folder = "/kaggle/working/phi3_mini_runs" # Dedicated folder
-    os.makedirs(output_folder, exist_ok=True) 
-
-    metadata_path = os.path.join(output_folder, f'metadata_{experiment_id}.csv')
-    emissions_path = os.path.join(output_folder, f'emissions_{experiment_id}.csv')
-    checkpoint_dir = os.path.join(output_folder, f'results_{experiment_id}')
-
-    # --- Save Metadata *BEFORE* Run ---
+    # --- Append Metadata ---
+    # This saves the parameters *before* the run starts
     all_columns = [
         'model_name', 'dataset_name', 'num_train_samples', 'num_epochs', 'batch_size',
         'fp16', 'pue', 'experiment_id', 'gpu_type', 'learning_rate', 'max_sequence_length',
@@ -80,18 +82,19 @@ def run_single_lora_experiment(params: dict):
     metadata_df = metadata_df[all_columns] 
     
     try:
-        # Save metadata to its *own* unique file
-        metadata_df.to_csv(metadata_path, index=False)
-        logger.info(f"Successfully saved metadata to {metadata_path}")
+        # Check if file exists to decide on writing header
+        file_exists = os.path.exists(METADATA_PATH)
+        metadata_df.to_csv(METADATA_PATH, mode='a', header=not file_exists, index=False)
+        logger.info(f"Successfully appended metadata to {METADATA_PATH}")
     except Exception as e:
         logger.error(f"CRITICAL: FAILED to save metadata. Aborting. Error: {e}")
         return 
 
     # --- Initialize eco2ai tracker ---
     tracker = eco2ai.Tracker(
-        project_name=f"Phi3_Run_{experiment_id}",
+        project_name="EcoBERT_Predictor_Data_Collection",
         experiment_description=f"run_{experiment_id}",
-        file_name=emissions_path, # Log to its *own* unique file
+        file_name=EMISSIONS_PATH, 
         pue=metadata.get('pue', 1.58)
     )
 
@@ -105,43 +108,45 @@ def run_single_lora_experiment(params: dict):
     
     try:
         tracker.start()
-        logger.info(f"eco2ai tracker started. Saving to: {emissions_path}")
+        logger.info(f"eco2ai tracker started. Appending to: {EMISSIONS_PATH}")
         
         # --- <<< QLoRA CONFIGURATION >>> ---
+        # 1. Define 4-bit Quantization
         quantization_config = BitsAndBytesConfig(
             load_in_4bit=True,
             bnb_4bit_use_double_quant=True,
             bnb_4bit_quant_type="nf4",
-            bnb_4bit_compute_dtype=torch.bfloat16 
+            bnb_4bit_compute_dtype=torch.bfloat16 # Use bfloat16 for compute
         )
         
         model_name = metadata['model_name']
         
+        # 2. Load Tokenizer
+        # trust_remote_code=True is required for Phi-3
         tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
         if tokenizer.pad_token is None:
             tokenizer.pad_token = tokenizer.eos_token 
             logger.info("Set tokenizer.pad_token = tokenizer.eos_token")
 
-        # Load as a CausalLM
-        model = AutoModelForCausalLM.from_pretrained(
+        # 3. Load 4-bit Model
+        model = AutoModelForSequenceClassification.from_pretrained(
             model_name,
-            quantization_config=quantization_config, 
+            num_labels=2,
+            quantization_config=quantization_config, # Apply 4-bit
             trust_remote_code=True,
-            device_map="auto", 
+            device_map="auto", # Automatically maps model across all available GPUs (T4 x2)
             pad_token_id=tokenizer.pad_token_id
         )
-        model.config.pad_token_id = tokenizer.pad_token_id
         logger.info(f"Loaded {model_name} in 4-bit (QLoRA) mode.")
 
-        # Define LoRA adapters
+        # 4. Define LoRA adapters
         lora_config = LoraConfig(
             r=16, 
             lora_alpha=32,
-            target_modules=["qkv_proj", "o_proj", "gate_up_proj", "down_proj"], 
+            target_modules=["qkv_proj", "o_proj", "gate_up_proj", "down_proj"], # Specific to Phi-3
             lora_dropout=0.05, 
             bias="none", 
-            task_type=TaskType.SEQ_CLS,
-            num_labels=2
+            task_type=TaskType.SEQ_CLS
         )
         model = get_peft_model(model, lora_config)
         logger.info("LoRA (PEFT) model activated.")
@@ -163,13 +168,13 @@ def run_single_lora_experiment(params: dict):
 
         # --- Training Arguments ---
         training_args = TrainingArguments(
-            output_dir=checkpoint_dir,
+            output_dir=os.path.join(CHECKPOINT_DIR, experiment_id),
             num_train_epochs=metadata['num_epochs'],
             per_device_train_batch_size=metadata['batch_size'],
             gradient_accumulation_steps=metadata['gradient_accumulation_steps'],
             learning_rate=metadata['learning_rate'],
-            fp16=False, 
-            bf16=True,  
+            fp16=False, # Must be False for QLoRA
+            bf16=True,  # Use bf16 for compute (supported by T4)
             logging_steps=100,
             report_to="none",   
             save_strategy="no", 
@@ -191,7 +196,7 @@ def run_single_lora_experiment(params: dict):
         print(f"ERROR during experiment {experiment_id}: {e}")
         traceback.print_exc() 
     finally:
-        # --- STOP TRACKER (THE SAFETY NET) ---
+        # --- STOP TRACKER ---
         logger.info(f"Executing finally block for {experiment_id}...")
         try:
             tracker.stop()
@@ -208,48 +213,78 @@ def run_single_lora_experiment(params: dict):
         torch.cuda.empty_cache()
         logger.info("GPU memory cleaned.")
 
+# --- 6. Define the 5 HEAVY experiments for Phi-3-mini (QLoRA) ---
+def get_phi3_configs(gpu_type: str) -> list[dict]:
+    logger.info("Generating 5 HEAVY configurations for Phi-3-mini (QLoRA)...")
+    
+    base_params = {
+        'model_name': 'microsoft/phi-3-mini-4k-instruct',
+        'model_parameters': PHI_3_MINI_PARAMS,
+        'dataset_name': 'imdb',
+        'pue': 1.58,
+        'dataset_config': np.nan,
+        'fp16': False, # QLoRA uses bf16
+        'learning_rate': 2e-4, # Standard for LoRA
+        'gpu_type': gpu_type,
+        'num_gpus': torch.cuda.device_count()
+    }
+
+    # <<< MODIFIED: 5 HEAVY variations with varying epochs >>>
+    # We will vary num_epochs to get high-emission data
+    configs = [
+        # 1. Standard Run (1 Epoch, 25k samples)
+        {**base_params, 'max_sequence_length': 512, 'num_train_samples': 25000, 
+         'num_epochs': 1, 'batch_size': 2, 'gradient_accumulation_steps': 8}, # Eff 32
+        
+        # 2. More Epochs (Heavy, 20k samples)
+        {**base_params, 'max_sequence_length': 256, 'num_train_samples': 20000, 
+         'num_epochs': 3, 'batch_size': 4, 'gradient_accumulation_steps': 4}, # Eff 32
+         
+        # 3. Max Samples (Heavy, 50k samples)
+        {**base_params, 'max_sequence_length': 256, 'num_train_samples': 50000, 
+         'num_epochs': 1, 'batch_size': 2, 'gradient_accumulation_steps': 8}, # Eff 32
+         
+        # 4. More Epochs (Heavier, 25k samples)
+        {**base_params, 'max_sequence_length': 128, 'num_train_samples': 25000, 
+         'num_epochs': 4, 'batch_size': 8, 'gradient_accumulation_steps': 2}, # Eff 32
+         
+        # 5. Long Sequence + More Epochs (Very Heavy - run last)
+        {**base_params, 'max_sequence_length': 512, 'num_train_samples': 20000, 
+         'num_epochs': 2, 'batch_size': 2, 'gradient_accumulation_steps': 8}, # Eff 32
+    ]
+    
+    return configs
+
 # --- 7. Main execution ---
 if __name__ == '__main__':
-    # --- Create data/raw directory if it doesn't exist (for eco2ai's internal usage) ---
+    # --- Create data/raw directory if it doesn't exist (needed by eco2ai) ---
+    # This path is relative to /kaggle/working/
     os.makedirs('data/raw', exist_ok=True)
     logger.info("Ensured /kaggle/working/data/raw directory exists (for eco2ai).")
 
     if not torch.cuda.is_available():
          logger.error("!!! FATAL: No GPU detected by PyTorch. Aborting. !!!")
     else:
-        # --- PARAMETERS FOR THIS *SINGLE* EXPERIMENT ---
-        # To get high emissions, you must increase 'num_epochs'
-        # This is Run #1. For Run #2, copy this script and change these params.
-        current_experiment_params = {
-            'model_name': 'microsoft/phi-3-mini-4k-instruct',
-            'model_parameters': PHI_3_MINI_PARAMS,
-            'dataset_name': 'imdb',
-            'pue': 1.58,
-            'dataset_config': np.nan,
-            'fp16': False, # QLoRA uses bf16
-            'learning_rate': 2e-4, 
+        gpu_type_str = get_gpu_type() 
+        experiment_configs = get_phi3_configs(gpu_type=gpu_type_str) 
+        total_exps = len(experiment_configs)
+        logger.info(f"--- STARTING CAMPAIGN: {total_exps} HEAVY experiments for Phi-3-mini ---")
+
+        for i, config in enumerate(experiment_configs):
+            logger.info(f"--- Preparing Experiment {i+1}/{total_exps} ---")
+            run_single_experiment(config)
+            logger.info(f"--- Finished Experiment {i+1}/{total_exps} ---")
+            time.sleep(15) 
             
-            # --- TUNE THESE FOR EACH RUN ---
-            'max_sequence_length': 512, 
-            'num_train_samples': 25000, 
-            'num_epochs': 5,  # <--- INCREASE THIS FOR HIGHER EMISSIONS
-            'batch_size': 2,  # Per GPU (e.g., T4 x2 = 4 total)
-            'gradient_accumulation_steps': 8 # Effective batch = (2 * 2 GPUs) * 8 = 32
-        }
+        logger.info("--- FULL CAMPAIGN FINISHED ---")
         
-        logger.info(f"--- STARTING SINGLE HEAVY experiment for Phi-3-mini ---")
-        run_single_lora_experiment(current_experiment_params)
-        logger.info(f"--- FINISHED SINGLE HEAVY experiment ---")
-        
+        # --- Final check of output files ---
         logger.info(f"--- Listing contents of /kaggle/working/ ---")
         try:
             for f in os.listdir("/kaggle/working/"):
                 logger.info(f"- {f}")
-            logger.info("--- Listing contents of phi3_mini_runs/ ---")
-            for f in os.listdir("/kaggle/working/phi3_mini_runs/"):
-                logger.info(f"- {f}")
         except Exception as e:
             logger.error(f"Could not list output directory contents: {e}")
 
-        print("\nPhi-3-mini (QLoRA) experiment executed.")
-        print(f"Check the 'phi3_mini_runs' folder in the Output for your files.")
+        print("\nAll 5 Phi-3-mini (QLoRA) experiments executed.")
+        print(f"Check '/kaggle/working/training_metadata.csv' and '/kaggle/working/emissions.csv' for output.")
