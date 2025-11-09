@@ -47,11 +47,23 @@ def build_features():
     y = df['CO2_emissions(kg)']
 
     # --- APPLY LOG TRANSFORMATION TO THE TARGET VARIABLE (y) ---
-    logger.info("Applying log1p transformation to the target variable 'CO2_emissions(kg)'...")
-    y_transformed = np.log1p(y) # y_transformed will be used for training
+    # --- APPLY LOG TRANSFORMATION + NORMALIZATION TO TARGET ---
+    logger.info("Applying log1p transformation and normalization to the target variable 'CO2_emissions(kg)'...")
+
+    y_log = np.log1p(y)
+    y_mean = y_log.mean()
+    y_std = y_log.std()
+
+    # Save normalization parameters
+    np.save(os.path.join(models_path, 'target_mean.npy'), y_mean)
+    np.save(os.path.join(models_path, 'target_std.npy'), y_std)
+
+    # Normalize the target for stable training
+    y_transformed = (y_log - y_mean) / y_std
 
     # Save the original y for test evaluation later
     y_original = y.copy()
+
 
     # Split data into training and testing sets
     X_train, X_test, y_train_transformed, y_test_transformed, y_train_original, y_test_original = train_test_split(

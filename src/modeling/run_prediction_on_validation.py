@@ -97,11 +97,22 @@ def predict_on_validation_data():
     logger.info("Applied preprocessor to validation data.")
 
 
-    # 2. Predict on the log-scale
-    predictions_log = final_model.predict(X_features_processed)
-    
-    # 3. Inverse-transform to get original kg scale
+    # 2. Predict on the normalized log-scale
+    predictions_norm = final_model.predict(X_features_processed)
+
+    # 3. Load normalization parameters
+    y_mean = np.load(os.path.join(models_path, 'target_mean.npy'))
+    y_std = np.load(os.path.join(models_path, 'target_std.npy'))
+
+    # 4. Denormalize (undo standardization)
+    predictions_log = predictions_norm * y_std + y_mean
+
+    # 5. Inverse log1p transform
     predictions_original = np.expm1(predictions_log)
+
+    # 6. Fix negatives
+    predictions_original[predictions_original < 0] = 0
+
     predictions_original[predictions_original < 0] = 0 # Handle negatives
     logger.info("Generated predictions on original scale.")
 

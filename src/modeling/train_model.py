@@ -147,15 +147,22 @@ def train_and_evaluate():
     
     # <<< FIX 3: Evaluate on the ORIGINAL scale for real-world metrics ---
     
-    # 1. Predict on the log-scale
-    predictions_log = final_model.predict(X_test)
-    
-    # 2. Inverse-transform the predictions (log1p -> expm1)
+    ## 1. Predict normalized log-scale
+    predictions_norm = final_model.predict(X_test)
+
+    # 2. Load normalization parameters from build_features
+    y_mean = np.load(os.path.join(models_path, 'target_mean.npy'))
+    y_std = np.load(os.path.join(models_path, 'target_std.npy'))
+
+    # 3. Denormalize: reverse (x - mean)/std
+    predictions_log = predictions_norm * y_std + y_mean
+
+    # 4. Inverse log transform (log1p -> expm1)
     predictions_original = np.expm1(predictions_log)
-    
-    # 3. Handle potential negative predictions (if model predicts < 0 on log scale)
+
+    # 5. Handle any negatives (just to be safe)
     predictions_original[predictions_original < 0] = 0
-    
+
     # 4. Calculate metrics by comparing to y_test_original
     rmse = np.sqrt(mean_squared_error(y_test_original, predictions_original))
     mae = mean_absolute_error(y_test_original, predictions_original)
