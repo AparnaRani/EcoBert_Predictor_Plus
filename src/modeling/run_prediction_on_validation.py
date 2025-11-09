@@ -83,6 +83,17 @@ def predict_on_validation_data():
     # Reorder columns to match the preprocessor's expectation
     X_features = X_features[expected_cols]
 
+# --- Clip validation features to within training range ---
+    try:
+        train_data = pd.read_csv(os.path.join(project_root, 'data', 'raw', 'cleaned_merged_data.csv'))
+        for col in ['num_train_samples', 'num_epochs', 'batch_size', 'max_sequence_length', 'learning_rate']:
+            if col in X_features.columns:
+                min_val, max_val = train_data[col].min(), train_data[col].max()
+                X_features[col] = X_features[col].clip(lower=min_val, upper=max_val)
+        logger.info("Clipped validation feature ranges to match training limits.")
+    except Exception as e:
+        logger.warning(f"Could not clip feature ranges: {e}")
+
     # --- Run Prediction ---
     
     # --- Run Prediction ---
@@ -95,6 +106,11 @@ def predict_on_validation_data():
     # The preprocessor (with SimpleImputer) will handle any NaNs
     X_features_processed = preprocessor.transform(X_features)
     logger.info("Applied preprocessor to validation data.")
+
+    # --- Fix: Replace any NaNs (from unseen categories or missing data) ---
+    
+    X_features_processed = np.nan_to_num(X_features_processed, nan=0.0)
+    logger.info("Replaced NaN values in processed validation features with 0.0.")
 
 
     # 2. Predict on the normalized log-scale

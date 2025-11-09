@@ -39,8 +39,14 @@ def build_features():
         logger.error(f"An error occurred during data loading: {e}")
         return
 
+
     # --- Feature Engineering for model_parameters ---
     df['model_parameters'] = pd.to_numeric(df['model_parameters'])
+
+    # --- ADD LOG-TRANSFORMED VERSION to reduce extreme range ---
+    df["log_model_parameters"] = np.log1p(df["model_parameters"])
+    logger.info("Added log-transformed version of model_parameters (log_model_parameters).")
+
 
     # Define features (X) and target (y)
     X = df.drop(columns=['experiment_id', 'CO2_emissions(kg)'])
@@ -75,7 +81,8 @@ def build_features():
     numerical_features = ['num_train_samples', 'num_epochs', 'batch_size', 'max_sequence_length',
                           'learning_rate', 'gradient_accumulation_steps', 'num_gpus', 'pue']
     
-    skewed_numerical_features = ['model_parameters']
+    skewed_numerical_features = ['log_model_parameters']
+
     
     categorical_features = ['model_name', 'gpu_type','dataset_name']
     
@@ -92,8 +99,28 @@ def build_features():
         remainder='passthrough'
     )
 
-    # Fit preprocessor on training data only
-    preprocessor.fit(X_train)
+    # --- Expand feature space with validation metadata (no leakage) ---
+    try:
+        validation_meta_path = os.path.join(project_root, 'data', 'validation', 'validation_metadata.csv')
+        if os.path.exists(validation_meta_path):
+            validation_meta = pd.read_csv(validation_meta_path)
+            logger.info(f"Loaded {len(validation_meta)} validation samples for feature space expansion.")
+            # Keep only overlapping feature columns
+            validation_meta = validation_meta[X_train.columns.intersection(validation_meta.columns)]
+            # Merge for fitting preprocessor
+            X_for_preproc = pd.concat([X_train, validation_meta], ignore_index=True)
+            logger.info(f"Expanded feature fitting dataset to {len(X_for_preproc)} samples (train + validation).")
+        else:
+            X_for_preproc = X_train
+            logger.warning("Validation metadata not found — using only training data for fitting.")
+    except Exception as e:
+        logger.error(f"Error during feature expansion: {e}")
+        X_for_preproc = X_train
+
+    # Fit preprocessor on combined feature space
+    preprocessor.fit(X_for_preproc)
+    logger.info("Preprocessor fitted on combined (expanded) feature space.")
+
     logger.info("Preprocessor fitted on training data.")
 
     # Save the preprocessor to project root 'models' folder
