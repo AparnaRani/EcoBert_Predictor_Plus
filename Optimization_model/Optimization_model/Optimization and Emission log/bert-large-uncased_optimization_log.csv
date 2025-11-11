@@ -1,0 +1,2 @@
+id,project_name,experiment_description,epoch,start_time,duration(s),power_consumption(kWh),CO2_emissions(kg),CPU_name,GPU_name,OS,region/country,cost
+849e27e2-c709-4694-9a55-2786fe28bf92,CO2_Optimization,Optimizing bert-large-uncased,N/A,2025-11-08 08:31:28,1.6639094352722168,2.646532808284974e-07,4.7793735984818344e-08,"Intel(R) Xeon(R) CPU @ 2.20GHz/1 device(s), TDP:61.0", 0 device(s),Linux,US/Oregon,0

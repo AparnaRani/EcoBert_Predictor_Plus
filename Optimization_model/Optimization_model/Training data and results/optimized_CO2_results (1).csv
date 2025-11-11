@@ -1,0 +1,10 @@
+model_name,baseline_accuracy_%,optimized_accuracy_%,accuracy_change_%,baseline_CO2_kg,optimized_CO2_kg,reduction_%,best_strategy
+bert-base-uncased,90.12,90.14,0.01,4.2522819139885905e-08,4.290434634847686e-08,-0.9,"{'batch_size': 35, 'num_epochs': 6, 'num_train_samples': 64345}"
+bert-large-uncased,90.72,91.47,0.75,7.865348027295649e-08,2.6061310675583636e-08,66.87,"{'batch_size': 8, 'num_epochs': 2, 'num_train_samples': 73901}"
+distilbert-base-uncased,90.35,90.38,0.03,1.1067071122459303e-07,1.1322939100386123e-07,-2.31,"{'batch_size': 42, 'num_epochs': 7, 'num_train_samples': 82656}"
+gpt2-medium,91.44,91.36,-0.08,1.997358919019546e-05,9.126651722628498e-06,54.31,"{'batch_size': 64, 'num_epochs': 45, 'num_train_samples': 78034}"
+gpt2-large,91.59,92.07,0.48,9.35486323728055e-06,7.132543090655559e-06,23.76,"{'batch_size': 32, 'num_epochs': 30, 'num_train_samples': 41359}"
+gpt2-xl,91.38,91.38,0.0,4.614393021613533e-08,4.688712596723332e-08,-1.61,"{'batch_size': 70, 'num_epochs': 11, 'num_train_samples': 99629}"
+roberta-base,90.66,90.66,0.0,1.0131609466489707e-05,1.0131609466489705e-05,0.0,"{'batch_size': 64, 'num_epochs': 18, 'num_train_samples': 89347}"
+t5-small,89.1,89.11,0.01,2.587182183177198e-08,2.6017618441493715e-08,-0.56,"{'batch_size': 67, 'num_epochs': 11, 'num_train_samples': 46468}"
+phi-3-mini,91.48,91.48,-0.01,1.0222485273613096e-07,1.0756219321247111e-07,-5.22,"{'batch_size': 35, 'num_epochs': 39, 'num_train_samples': 47943}"

@@ -1,0 +1,2 @@
+id,project_name,experiment_description,epoch,start_time,duration(s),power_consumption(kWh),CO2_emissions(kg),CPU_name,GPU_name,OS,region/country,cost
+f82a0711-284a-487b-b6f2-6697de5c3cec,CO2_Optimization,Optimizing phi-3-mini,N/A,2025-11-08 08:31:51,1.6653900146484375,2.6466612200465536e-07,4.779605497282071e-08,"Intel(R) Xeon(R) CPU @ 2.20GHz/1 device(s), TDP:61.0", 0 device(s),Linux,US/Oregon,0

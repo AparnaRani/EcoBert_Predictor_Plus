@@ -1,0 +1,2 @@
+id,project_name,experiment_description,epoch,start_time,duration(s),power_consumption(kWh),CO2_emissions(kg),CPU_name,GPU_name,OS,region/country,cost
+3d8ddc5e-754d-41a8-96cd-56077ef78ebc,CO2_Optimization,Optimizing roberta-base,N/A,2025-11-08 08:31:44,1.6683969497680664,2.6493797045645804e-07,4.784514808473176e-08,"Intel(R) Xeon(R) CPU @ 2.20GHz/1 device(s), TDP:61.0", 0 device(s),Linux,US/Oregon,0

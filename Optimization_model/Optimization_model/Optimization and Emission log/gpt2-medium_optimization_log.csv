@@ -1,0 +1,2 @@
+id,project_name,experiment_description,epoch,start_time,duration(s),power_consumption(kWh),CO2_emissions(kg),CPU_name,GPU_name,OS,region/country,cost
+c659f6c5-dab1-44e3-87e2-f39e13b856ee,CO2_Optimization,Optimizing gpt2-medium,N/A,2025-11-08 08:31:34,1.740070104598999,2.829442137394873e-06,5.109689555921401e-07,"Intel(R) Xeon(R) CPU @ 2.20GHz/1 device(s), TDP:61.0", 0 device(s),Linux,US/Oregon,0

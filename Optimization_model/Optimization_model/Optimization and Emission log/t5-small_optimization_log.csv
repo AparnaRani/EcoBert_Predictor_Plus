@@ -1,0 +1,2 @@
+id,project_name,experiment_description,epoch,start_time,duration(s),power_consumption(kWh),CO2_emissions(kg),CPU_name,GPU_name,OS,region/country,cost
+88c8b07f-e6f7-4cbc-9765-bb8218a6d12c,CO2_Optimization,Optimizing t5-small,N/A,2025-11-08 08:31:48,1.6639306545257568,2.645868947691573e-07,4.778174732636212e-08,"Intel(R) Xeon(R) CPU @ 2.20GHz/1 device(s), TDP:61.0", 0 device(s),Linux,US/Oregon,0
