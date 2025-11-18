@@ -89,7 +89,7 @@ def build_features():
     numerical_features = ['num_train_samples', 'num_epochs', 'batch_size', 'max_sequence_length',
                           'learning_rate', 'gradient_accumulation_steps', 'num_gpus', 'pue','scaled_load' ]
     
-    skewed_numerical_features = ['log_model_parameters','log_model_parameters']
+    skewed_numerical_features = ['log_model_parameters','scaled_load']
 
     
     categorical_features = ['model_name', 'gpu_type','dataset_name']
