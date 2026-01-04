@@ -1,0 +1,12 @@
+Model Family,Parameters,Actual CO₂ (kg),Predicted CO₂ (kg),Absolute Error (kg)
+t5-small,60M,0.0000,0.0000,8.62e-07
+DistilBERT Base,66M,0.0000,0.0000,2.44e-05
+BERT Base,110M,0.0000,0.0000,1.07e-05
+RoBERTa Base,125M,0.0206,0.0118,8.75e-03
+BERT Large,340M,0.0789,0.0701,8.82e-03
+GPT-2 Medium,345M,0.0070,0.0086,1.60e-03
+GPT-2 Large,774M,0.0128,0.0191,6.26e-03
+GPT-2 XL,1.5B,0.0001,0.0000,7.78e-05
+TinyLlama,1.1B,0.0334,0.0483,1.50e-02
+Gemma 2B,2B,0.0127,0.0127,0.00e+00
+Phi-3 Mini,3.8B,0.7928,0.9530,1.60e-01
