@@ -10,12 +10,25 @@ import logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
+# -------------------------------------------------
+# Model family extractor (supports new models)
+# -------------------------------------------------
 def extract_model_family(name: str) -> str:
     if not isinstance(name, str):
         return "other"
+
     base = name.split("/")[-1].lower()
+
     if "llama" in base:
         return "llama"
+    if "qwen" in base:
+        return "qwen"
+    if "mistral" in base:
+        return "mistral"
+    if "mixtral" in base:
+        return "mixtral"
+    if "deepseek" in base:
+        return "deepseek"
     if "gemma" in base:
         return "gemma"
     if "phi" in base:
@@ -28,59 +41,70 @@ def extract_model_family(name: str) -> str:
         return "t5"
     if "roberta" in base:
         return "roberta"
+
     return "other"
 
+
+# -------------------------------------------------
+# Main feature builder
+# -------------------------------------------------
 def build_features():
     logger.info("Starting feature engineering...")
 
     project_root = r"D:\EcoPredictor+"
-    raw_data_path = os.path.join(project_root, "data", "raw")
-    processed_data_path = os.path.join(project_root, "data", "processed")
+    raw_path = os.path.join(project_root, "data", "raw")
+    processed_path = os.path.join(project_root, "data", "processed")
     models_path = os.path.join(project_root, "models")
 
-    os.makedirs(processed_data_path, exist_ok=True)
+    os.makedirs(processed_path, exist_ok=True)
     os.makedirs(models_path, exist_ok=True)
 
-    # Load cleaned merged data
-    df = pd.read_csv(os.path.join(raw_data_path, "cleaned_merged_data.csv"))
-    logger.info(f"Loaded cleaned_merged_data.csv with shape {df.shape}")
+    # ---------------- LOAD DATA ----------------
+    df = pd.read_csv(os.path.join(raw_path, "cleaned_merged_data.csv"))
+    logger.info(f"Loaded cleaned data: {df.shape}")
 
-    # --- Core numeric fields ---
+    if len(df) < 10:
+        raise ValueError("Too few rows after cleaning. Aborting.")
+
+    # ---------------- FEATURE ENGINEERING ----------------
     df["model_parameters"] = pd.to_numeric(df["model_parameters"], errors="coerce")
     df["log_model_parameters"] = np.log1p(df["model_parameters"])
 
-    # Total tokens processed (very important)
-    df["total_tokens"] = df["num_train_samples"] * df["max_sequence_length"]
+    df["total_tokens"] = (
+        df["num_train_samples"].clip(lower=1)
+        * df["max_sequence_length"].clip(lower=1)
+    )
 
-    # Compute load ~ params * tokens * epochs
-    df["compute_load"] = df["model_parameters"] * df["total_tokens"] * df["num_epochs"]
+    df["compute_load"] = (
+        df["model_parameters"] * df["total_tokens"] * df["num_epochs"]
+    )
     df["compute_log"] = np.log1p(df["compute_load"])
 
-    # Simple size cluster (can be used as categorical)
     df["size_cluster"] = np.where(df["model_parameters"] < 8e8, "small", "large")
 
-    # GPU power (Watts) lookup based on your gpu_type list
     gpu_power_map = {
         "Tesla T4": 70,
         "TPU v2-8": 250,
         "Tesla P100-PCIE-16GB": 250,
         "NVIDIA GeForce RTX 3080": 320,
-        "NVIDIA GeForce RTX 3090": 350
+        "NVIDIA GeForce RTX 3090": 350,
+        "NVIDIA V100": 300,
+        "NVIDIA A100": 400,
+        "NVIDIA H100": 700,
+        "NVIDIA L4": 72,
     }
-    df["gpu_power_watts"] = df["gpu_type"].map(gpu_power_map).fillna(200)
 
-    # Model family
+    df["gpu_power_watts"] = df["gpu_type"].map(gpu_power_map).fillna(200)
     df["model_family"] = df["model_name"].apply(extract_model_family)
 
-    # --- Define X and y ---
-    if "experiment_id" not in df.columns or "CO2_emissions(kg)" not in df.columns:
-        logger.error("Missing 'experiment_id' or 'CO2_emissions(kg)' in cleaned_merged_data.csv")
-        return
+    print("\nMODEL FAMILY DISTRIBUTION:")
+    print(df["model_family"].value_counts())
 
+    # ---------------- X / y ----------------
     X = df.drop(columns=["experiment_id", "CO2_emissions(kg)"])
     y = df["CO2_emissions(kg)"]
 
-    # --- Transform y (log + standardize) ---
+    # ---------------- TARGET TRANSFORM ----------------
     y_log = np.log1p(y)
     y_mean = y_log.mean()
     y_std = y_log.std()
@@ -90,12 +114,18 @@ def build_features():
 
     y_transformed = (y_log - y_mean) / y_std
 
-    # Train / test split
-    X_train, X_test, y_train, y_test, y_train_orig, y_test_orig = train_test_split(
-        X, y_transformed, y, test_size=0.2, random_state=42
+    # ---------------- CORRECT SPLIT (ONLY 2 ARRAYS) ----------------
+    X_train, X_test, y_train, y_test = train_test_split(
+        X,
+        y_transformed,
+        test_size=0.25,
+        random_state=42
     )
 
-    # --- Feature groups ---
+    # Recover original-scale y_test using index alignment
+    y_test_orig = y.loc[X_test.index].values
+
+    # ---------------- PREPROCESSOR ----------------
     numeric_standard = [
         "num_train_samples",
         "num_epochs",
@@ -120,7 +150,6 @@ def build_features():
         "size_cluster",
         "dataset_name",
         "gpu_type",
-        # you *can* add model_name, but it will explode dims; keeping it out helps generalization
     ]
 
     boolean = ["fp16"]
@@ -128,25 +157,28 @@ def build_features():
     preprocessor = ColumnTransformer(
         transformers=[
             ("num_std", StandardScaler(), numeric_standard),
-            ("num_quant", QuantileTransformer(output_distribution="normal"), numeric_skewed),
+            ("num_q", QuantileTransformer(output_distribution="normal"), numeric_skewed),
             ("cat", OneHotEncoder(handle_unknown="ignore"), categorical),
             ("bool", OneHotEncoder(drop="if_binary"), boolean),
-        ],
-        remainder="drop",
+        ]
     )
 
     preprocessor.fit(X_train)
     joblib.dump(preprocessor, os.path.join(models_path, "preprocessor.joblib"))
-    logger.info("Preprocessor fitted and saved.")
 
-    # Save splits
-    X_train.to_csv(os.path.join(processed_data_path, "X_train_raw.csv"), index=False)
-    X_test.to_csv(os.path.join(processed_data_path, "X_test_raw.csv"), index=False)
-    pd.DataFrame({"y": y_train}).to_csv(os.path.join(processed_data_path, "y_train_transformed.csv"), index=False)
-    pd.DataFrame({"y": y_test}).to_csv(os.path.join(processed_data_path, "y_test_transformed.csv"), index=False)
-    pd.DataFrame({"y": y_test_orig}).to_csv(os.path.join(processed_data_path, "y_test_original.csv"), index=False)
+    # ---------------- SAVE OUTPUTS ----------------
+    X_train.to_csv(os.path.join(processed_path, "X_train_raw.csv"), index=False)
+    X_test.to_csv(os.path.join(processed_path, "X_test_raw.csv"), index=False)
 
-    logger.info("Feature engineering complete. Train/test splits saved.")
+    pd.DataFrame({"y": y_train}).to_csv(
+        os.path.join(processed_path, "y_train_transformed.csv"), index=False
+    )
+    pd.DataFrame({"y": y_test_orig}).to_csv(
+        os.path.join(processed_path, "y_test_original.csv"), index=False
+    )
+
+    logger.info("Feature engineering complete.")
+
 
 if __name__ == "__main__":
     build_features()
