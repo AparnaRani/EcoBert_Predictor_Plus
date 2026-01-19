@@ -1,0 +1,118 @@
+{
+    "timestamp": "2026-01-19_17-35-59",
+    "input_config": {
+        "model_name": "gpt2-medium",
+        "dataset_name": "imdb",
+        "num_train_samples": 10000.0,
+        "num_epochs": 2.0,
+        "batch_size": 16.0,
+        "fp16": true,
+        "pue": 1.58,
+        "gpu_type": "Tesla P100-PCIE-16GB",
+        "learning_rate": 2e-05,
+        "max_sequence_length": 128.0,
+        "gradient_accumulation_steps": 2.0,
+        "num_gpus": 1.0,
+        "dataset_config": NaN,
+        "model_parameters": 354823168.0,
+        "Unnamed: 15": NaN,
+        "log_model_parameters": 19.687130107846,
+        "total_tokens": 1280000.0,
+        "compute_load": 908347310080000.0,
+        "compute_log": 34.44264792148344,
+        "size_cluster": "small",
+        "gpu_power_watts": 250,
+        "model_family": "gpt"
+    },
+    "predicted_co2": 0.024968443829298633,
+    "shap_explanation": [
+        {
+            "feature": "model_name",
+            "impact": -0.015855693533055753
+        },
+        {
+            "feature": "dataset_name",
+            "impact": 0.08536098009766788
+        },
+        {
+            "feature": "num_train_samples",
+            "impact": -0.0016397005628849511
+        },
+        {
+            "feature": "num_epochs",
+            "impact": -0.010676576861100838
+        },
+        {
+            "feature": "batch_size",
+            "impact": -0.12787301026825829
+        },
+        {
+            "feature": "fp16",
+            "impact": -0.0009104994218272431
+        },
+        {
+            "feature": "pue",
+            "impact": -0.0022047239055397
+        },
+        {
+            "feature": "gpu_type",
+            "impact": 0.0005925366900138492
+        },
+        {
+            "feature": "learning_rate",
+            "impact": 0.0031862047697922996
+        },
+        {
+            "feature": "max_sequence_length",
+            "impact": -0.06466839940652089
+        },
+        {
+            "feature": "gradient_accumulation_steps",
+            "impact": 0.0003297070953085185
+        },
+        {
+            "feature": "num_gpus",
+            "impact": 0.0004370200771513557
+        },
+        {
+            "feature": "dataset_config",
+            "impact": -0.0325921819484746
+        },
+        {
+            "feature": "model_parameters",
+            "impact": -0.00035232657328422947
+        },
+        {
+            "feature": "Unnamed: 15",
+            "impact": -0.050668066813894234
+        },
+        {
+            "feature": "log_model_parameters",
+            "impact": 0.018228959710782155
+        },
+        {
+            "feature": "total_tokens",
+            "impact": -0.010803868609201949
+        },
+        {
+            "feature": "compute_load",
+            "impact": 4.4958370925554915e-06
+        },
+        {
+            "feature": "compute_log",
+            "impact": -0.046769020743837895
+        },
+        {
+            "feature": "size_cluster",
+            "impact": 7.910269921323296e-05
+        },
+        {
+            "feature": "gpu_power_watts",
+            "impact": 7.459802765855936e-08
+        },
+        {
+            "feature": "model_family",
+            "impact": -0.00854187371417368
+        }
+    ]
+}
