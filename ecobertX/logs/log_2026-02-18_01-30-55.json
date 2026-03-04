@@ -1,0 +1,348 @@
+{
+    "timestamp": "2026-02-18_01-30-55",
+    "input_config": {
+        "model_name": "gpt2-medium",
+        "dataset_name": "imdb",
+        "num_train_samples": 10000.0,
+        "num_epochs": 2.0,
+        "batch_size": 16.0,
+        "fp16": true,
+        "pue": 1.58,
+        "gpu_type": "Tesla P100-PCIE-16GB",
+        "learning_rate": 2e-05,
+        "max_sequence_length": 128.0,
+        "gradient_accumulation_steps": 2.0,
+        "num_gpus": 1.0,
+        "dataset_config": NaN,
+        "model_parameters": 354823168.0,
+        "Unnamed: 15": NaN,
+        "log_model_parameters": 19.687130107846,
+        "total_tokens": 1280000.0,
+        "compute_load": 908347310080000.0,
+        "compute_log": 34.44264792148344,
+        "size_cluster": "small",
+        "gpu_power_watts": 250,
+        "model_family": "gpt"
+    },
+    "predicted_co2": 0.02496844382929864,
+    "confidence": 0.9482115852621125,
+    "explanation": [
+        {
+            "feature": "batch_size",
+            "value": 16.0,
+            "impact": -0.12787301026825829,
+            "reason": "Efficient batch size improves hardware utilization, reducing redundant compute and lowering emissions.",
+            "direction": "reduces CO2"
+        },
+        {
+            "feature": "dataset_name",
+            "value": "imdb",
+            "impact": 0.08536098009766788,
+            "reason": "This configuration increases computational demand, leading to higher CO₂ emissions.",
+            "direction": "increases CO2"
+        },
+        {
+            "feature": "max_sequence_length",
+            "value": 128.0,
+            "impact": -0.06466839940652089,
+            "reason": "Transformer attention complexity grows quadratically with sequence length, increasing computational cost.",
+            "direction": "reduces CO2"
+        },
+        {
+            "feature": "log_model_parameters",
+            "value": 19.687130107846,
+            "impact": -0.050668066813894234,
+            "reason": "Larger language models contain more parameters, which increases matrix multiplications and GPU compute, leading to higher power consumption and CO₂ emissions.",
+            "direction": "reduces CO2"
+        },
+        {
+            "feature": "size_cluster",
+            "value": "small",
+            "impact": -0.046769020743837895,
+            "reason": "This configuration improves efficiency, reducing overall CO₂ emissions.",
+            "direction": "reduces CO2"
+        },
+        {
+            "feature": "dataset_config",
+            "value": NaN,
+            "impact": -0.0325921819484746,
+            "reason": "This configuration improves efficiency, reducing overall CO₂ emissions.",
+            "direction": "reduces CO2"
+        },
+        {
+            "feature": "total_tokens",
+            "value": 1280000.0,
+            "impact": 0.018228959710782155,
+            "reason": "This configuration increases computational demand, leading to higher CO₂ emissions.",
+            "direction": "increases CO2"
+        },
+        {
+            "feature": "model_name",
+            "value": "gpt2-medium",
+            "impact": -0.015855693533055753,
+            "reason": "Larger language models contain more parameters, which increases matrix multiplications and GPU compute, leading to higher power consumption and CO₂ emissions.",
+            "direction": "reduces CO2"
+        },
+        {
+            "feature": "compute_load",
+            "value": 908347310080000.0,
+            "impact": -0.010803868609201949,
+            "reason": "This configuration improves efficiency, reducing overall CO₂ emissions.",
+            "direction": "reduces CO2"
+        },
+        {
+            "feature": "num_epochs",
+            "value": 2.0,
+            "impact": -0.010676576861100838,
+            "reason": "More training epochs require repeated forward and backward passes, increasing cumulative energy consumption.",
+            "direction": "reduces CO2"
+        },
+        {
+            "feature": "learning_rate",
+            "value": 2e-05,
+            "impact": 0.0031862047697922996,
+            "reason": "This configuration increases computational demand, leading to higher CO₂ emissions.",
+            "direction": "increases CO2"
+        },
+        {
+            "feature": "pue",
+            "value": 1.58,
+            "impact": -0.0022047239055397,
+            "reason": "This configuration improves efficiency, reducing overall CO₂ emissions.",
+            "direction": "reduces CO2"
+        },
+        {
+            "feature": "num_train_samples",
+            "value": 10000.0,
+            "impact": -0.0016397005628849511,
+            "reason": "This configuration improves efficiency, reducing overall CO₂ emissions.",
+            "direction": "reduces CO2"
+        },
+        {
+            "feature": "fp16",
+            "value": 1.0,
+            "impact": -0.0009104994218272431,
+            "reason": "This configuration improves efficiency, reducing overall CO₂ emissions.",
+            "direction": "reduces CO2"
+        },
+        {
+            "feature": "gpu_type",
+            "value": "Tesla P100-PCIE-16GB",
+            "impact": 0.0005925366900138492,
+            "reason": "GPU hardware characteristics directly affect energy efficiency and carbon footprint.",
+            "direction": "increases CO2"
+        },
+        {
+            "feature": "num_gpus",
+            "value": 1.0,
+            "impact": 0.0004370200771513557,
+            "reason": "GPU hardware characteristics directly affect energy efficiency and carbon footprint.",
+            "direction": "increases CO2"
+        },
+        {
+            "feature": "model_parameters",
+            "value": 354823168.0,
+            "impact": -0.00035232657328422947,
+            "reason": "Larger language models contain more parameters, which increases matrix multiplications and GPU compute, leading to higher power consumption and CO₂ emissions.",
+            "direction": "reduces CO2"
+        },
+        {
+            "feature": "gradient_accumulation_steps",
+            "value": 2.0,
+            "impact": 0.0003297070953085185,
+            "reason": "This configuration increases computational demand, leading to higher CO₂ emissions.",
+            "direction": "increases CO2"
+        },
+        {
+            "feature": "gpu_power_watts",
+            "value": 250.0,
+            "impact": 7.910269921323296e-05,
+            "reason": "GPU hardware characteristics directly affect energy efficiency and carbon footprint.",
+            "direction": "increases CO2"
+        },
+        {
+            "feature": "compute_log",
+            "value": 34.44264792148344,
+            "impact": 4.4958370925554915e-06,
+            "reason": "This configuration increases computational demand, leading to higher CO₂ emissions.",
+            "direction": "increases CO2"
+        },
+        {
+            "feature": "model_family",
+            "value": "gpt",
+            "impact": 7.459802765855936e-08,
+            "reason": "Larger language models contain more parameters, which increases matrix multiplications and GPU compute, leading to higher power consumption and CO₂ emissions.",
+            "direction": "increases CO2"
+        }
+    ],
+    "mechanistic_trace": [
+        {
+            "feature": "batch_size",
+            "value": "16.0",
+            "contribution": -0.12787301026825829,
+            "before": -0.0007524963908209503,
+            "after": -0.0007524963908209503,
+            "mechanism": "Efficient batch size improves hardware utilization, reducing redundant compute and lowering emissions."
+        },
+        {
+            "feature": "dataset_name",
+            "value": "imdb",
+            "contribution": 0.08536098009766788,
+            "before": 0.13943679130142314,
+            "after": 0.13943679130142314,
+            "mechanism": "This configuration increases computational demand, leading to higher CO₂ emissions."
+        },
+        {
+            "feature": "max_sequence_length",
+            "value": "128.0",
+            "contribution": -0.06466839940652089,
+            "before": -0.06475737766490264,
+            "after": -0.06475737766490264,
+            "mechanism": "Transformer attention complexity grows quadratically with sequence length, increasing computational cost."
+        },
+        {
+            "feature": "log_model_parameters",
+            "value": "19.687130107846",
+            "contribution": -0.050668066813894234,
+            "before": -0.14760322582809582,
+            "after": -0.14760322582809582,
+            "mechanism": "Larger language models contain more parameters, which increases matrix multiplications and GPU compute, leading to higher power consumption and CO₂ emissions."
+        },
+        {
+            "feature": "size_cluster",
+            "value": "small",
+            "contribution": -0.046769020743837895,
+            "before": -0.18694265963326098,
+            "after": -0.18694265963326098,
+            "mechanism": "This configuration improves efficiency, reducing overall CO₂ emissions."
+        },
+        {
+            "feature": "dataset_config",
+            "value": "nan",
+            "contribution": -0.0325921819484746,
+            "before": -0.09658283244091737,
+            "after": -0.09658283244091737,
+            "mechanism": "This configuration improves efficiency, reducing overall CO₂ emissions."
+        },
+        {
+            "feature": "total_tokens",
+            "value": "1280000.0",
+            "contribution": 0.018228959710782155,
+            "before": -0.12937426611731367,
+            "after": -0.12937426611731367,
+            "mechanism": "This configuration increases computational demand, leading to higher CO₂ emissions."
+        },
+        {
+            "feature": "model_name",
+            "value": "gpt2-medium",
+            "contribution": -0.015855693533055753,
+            "before": 0.054075811203755264,
+            "after": 0.054075811203755264,
+            "mechanism": "Larger language models contain more parameters, which increases matrix multiplications and GPU compute, leading to higher power consumption and CO₂ emissions."
+        },
+        {
+            "feature": "compute_load",
+            "value": "908347310080000.0",
+            "contribution": -0.010803868609201949,
+            "before": -0.14017813472651564,
+            "after": -0.14017813472651564,
+            "mechanism": "This configuration improves efficiency, reducing overall CO₂ emissions."
+        },
+        {
+            "feature": "num_epochs",
+            "value": "2.0",
+            "contribution": -0.010676576861100838,
+            "before": 0.12712051387743734,
+            "after": 0.12712051387743734,
+            "mechanism": "More training epochs require repeated forward and backward passes, increasing cumulative energy consumption."
+        },
+        {
+            "feature": "learning_rate",
+            "value": "2e-05",
+            "contribution": 0.0031862047697922996,
+            "before": -8.897825838174479e-05,
+            "after": -8.897825838174479e-05,
+            "mechanism": "This configuration increases computational demand, leading to higher CO₂ emissions."
+        },
+        {
+            "feature": "pue",
+            "value": "1.58",
+            "contribution": -0.0022047239055397,
+            "before": -0.0038677197181878936,
+            "after": -0.0038677197181878936,
+            "mechanism": "This configuration improves efficiency, reducing overall CO₂ emissions."
+        },
+        {
+            "feature": "num_train_samples",
+            "value": "10000.0",
+            "contribution": -0.0016397005628849511,
+            "before": 0.13779709073853819,
+            "after": 0.13779709073853819,
+            "mechanism": "This configuration improves efficiency, reducing overall CO₂ emissions."
+        },
+        {
+            "feature": "fp16",
+            "value": "True",
+            "contribution": -0.0009104994218272431,
+            "before": -0.0016629958126481935,
+            "after": -0.0016629958126481935,
+            "mechanism": "This configuration improves efficiency, reducing overall CO₂ emissions."
+        },
+        {
+            "feature": "gpu_type",
+            "value": "Tesla P100-PCIE-16GB",
+            "contribution": 0.0005925366900138492,
+            "before": -0.0032751830281740443,
+            "after": -0.0032751830281740443,
+            "mechanism": "GPU hardware characteristics directly affect energy efficiency and carbon footprint."
+        },
+        {
+            "feature": "num_gpus",
+            "value": "1.0",
+            "contribution": 0.0004370200771513557,
+            "before": -0.06399065049244276,
+            "after": -0.06399065049244276,
+            "mechanism": "GPU hardware characteristics directly affect energy efficiency and carbon footprint."
+        },
+        {
+            "feature": "model_parameters",
+            "value": "354823168.0",
+            "contribution": -0.00035232657328422947,
+            "before": -0.09693515901420159,
+            "after": -0.09693515901420159,
+            "mechanism": "Larger language models contain more parameters, which increases matrix multiplications and GPU compute, leading to higher power consumption and CO₂ emissions."
+        },
+        {
+            "feature": "gradient_accumulation_steps",
+            "value": "2.0",
+            "contribution": 0.0003297070953085185,
+            "before": -0.06442767056959411,
+            "after": -0.06442767056959411,
+            "mechanism": "This configuration increases computational demand, leading to higher CO₂ emissions."
+        },
+        {
+            "feature": "gpu_power_watts",
+            "value": "250",
+            "contribution": 7.910269921323296e-05,
+            "before": -0.18686355693404774,
+            "after": -0.18686355693404774,
+            "mechanism": "GPU hardware characteristics directly affect energy efficiency and carbon footprint."
+        },
+        {
+            "feature": "compute_log",
+            "value": "34.44264792148344",
+            "contribution": 4.4958370925554915e-06,
+            "before": -0.14017363888942308,
+            "after": -0.14017363888942308,
+            "mechanism": "This configuration increases computational demand, leading to higher CO₂ emissions."
+        },
+        {
+            "feature": "model_family",
+            "value": "gpt",
+            "contribution": 7.459802765855936e-08,
+            "before": -0.18686348233602007,
+            "after": -0.18686348233602007,
+            "mechanism": "Larger language models contain more parameters, which increases matrix multiplications and GPU compute, leading to higher power consumption and CO₂ emissions."
+        }
+    ]
+}

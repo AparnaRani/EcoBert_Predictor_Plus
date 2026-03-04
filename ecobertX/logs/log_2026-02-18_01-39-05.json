@@ -1,0 +1,292 @@
+{
+    "timestamp": "2026-02-18_01-39-05",
+    "input": {
+        "model_name": "gpt2-medium",
+        "dataset_name": "imdb",
+        "num_train_samples": 10000.0,
+        "num_epochs": 2.0,
+        "batch_size": 16.0,
+        "fp16": true,
+        "pue": 1.58,
+        "gpu_type": "Tesla P100-PCIE-16GB",
+        "learning_rate": 2e-05,
+        "max_sequence_length": 128.0,
+        "gradient_accumulation_steps": 2.0,
+        "num_gpus": 1.0,
+        "dataset_config": NaN,
+        "model_parameters": 354823168.0,
+        "Unnamed: 15": NaN,
+        "log_model_parameters": 19.687130107846,
+        "total_tokens": 1280000.0,
+        "compute_load": 908347310080000.0,
+        "compute_log": 34.44264792148344,
+        "size_cluster": "small",
+        "gpu_power_watts": 250,
+        "model_family": "gpt"
+    },
+    "prediction": 0.02496844382929864,
+    "confidence": 0.4042202024465922,
+    "explanation": [
+        {
+            "feature": "batch_size",
+            "value": 16.0,
+            "impact": -0.12787301026825829,
+            "effect": "decrease",
+            "importance": 0.12787301026825829
+        },
+        {
+            "feature": "dataset_name",
+            "value": "imdb",
+            "impact": 0.08536098009766788,
+            "effect": "increase",
+            "importance": 0.08536098009766788
+        },
+        {
+            "feature": "max_sequence_length",
+            "value": 128.0,
+            "impact": -0.06466839940652089,
+            "effect": "decrease",
+            "importance": 0.06466839940652089
+        },
+        {
+            "feature": "Unnamed: 15",
+            "value": NaN,
+            "impact": -0.050668066813894234,
+            "effect": "decrease",
+            "importance": 0.050668066813894234
+        },
+        {
+            "feature": "compute_log",
+            "value": 34.44264792148344,
+            "impact": -0.046769020743837895,
+            "effect": "decrease",
+            "importance": 0.046769020743837895
+        },
+        {
+            "feature": "dataset_config",
+            "value": NaN,
+            "impact": -0.0325921819484746,
+            "effect": "decrease",
+            "importance": 0.0325921819484746
+        },
+        {
+            "feature": "log_model_parameters",
+            "value": 19.687130107846,
+            "impact": 0.018228959710782155,
+            "effect": "increase",
+            "importance": 0.018228959710782155
+        },
+        {
+            "feature": "model_name",
+            "value": "gpt2-medium",
+            "impact": -0.015855693533055753,
+            "effect": "decrease",
+            "importance": 0.015855693533055753
+        },
+        {
+            "feature": "total_tokens",
+            "value": 1280000.0,
+            "impact": -0.010803868609201949,
+            "effect": "decrease",
+            "importance": 0.010803868609201949
+        },
+        {
+            "feature": "num_epochs",
+            "value": 2.0,
+            "impact": -0.010676576861100838,
+            "effect": "decrease",
+            "importance": 0.010676576861100838
+        },
+        {
+            "feature": "model_family",
+            "value": "gpt",
+            "impact": -0.00854187371417368,
+            "effect": "decrease",
+            "importance": 0.00854187371417368
+        },
+        {
+            "feature": "learning_rate",
+            "value": 2e-05,
+            "impact": 0.0031862047697922996,
+            "effect": "increase",
+            "importance": 0.0031862047697922996
+        },
+        {
+            "feature": "pue",
+            "value": 1.58,
+            "impact": -0.0022047239055397,
+            "effect": "decrease",
+            "importance": 0.0022047239055397
+        },
+        {
+            "feature": "num_train_samples",
+            "value": 10000.0,
+            "impact": -0.0016397005628849511,
+            "effect": "decrease",
+            "importance": 0.0016397005628849511
+        },
+        {
+            "feature": "fp16",
+            "value": 1.0,
+            "impact": -0.0009104994218272431,
+            "effect": "decrease",
+            "importance": 0.0009104994218272431
+        },
+        {
+            "feature": "gpu_type",
+            "value": "Tesla P100-PCIE-16GB",
+            "impact": 0.0005925366900138492,
+            "effect": "increase",
+            "importance": 0.0005925366900138492
+        },
+        {
+            "feature": "num_gpus",
+            "value": 1.0,
+            "impact": 0.0004370200771513557,
+            "effect": "increase",
+            "importance": 0.0004370200771513557
+        },
+        {
+            "feature": "model_parameters",
+            "value": 354823168.0,
+            "impact": -0.00035232657328422947,
+            "effect": "decrease",
+            "importance": 0.00035232657328422947
+        },
+        {
+            "feature": "gradient_accumulation_steps",
+            "value": 2.0,
+            "impact": 0.0003297070953085185,
+            "effect": "increase",
+            "importance": 0.0003297070953085185
+        },
+        {
+            "feature": "size_cluster",
+            "value": "small",
+            "impact": 7.910269921323296e-05,
+            "effect": "increase",
+            "importance": 7.910269921323296e-05
+        },
+        {
+            "feature": "compute_load",
+            "value": 908347310080000.0,
+            "impact": 4.4958370925554915e-06,
+            "effect": "increase",
+            "importance": 4.4958370925554915e-06
+        },
+        {
+            "feature": "gpu_power_watts",
+            "value": 250.0,
+            "impact": 7.459802765855936e-08,
+            "effect": "increase",
+            "importance": 7.459802765855936e-08
+        }
+    ],
+    "mechanistic_trace": [
+        {
+            "from": "batch_size",
+            "to": "dataset_name",
+            "strength": 0.12787301026825829
+        },
+        {
+            "from": "dataset_name",
+            "to": "max_sequence_length",
+            "strength": 0.08536098009766788
+        },
+        {
+            "from": "max_sequence_length",
+            "to": "Unnamed: 15",
+            "strength": 0.06466839940652089
+        },
+        {
+            "from": "Unnamed: 15",
+            "to": "compute_log",
+            "strength": 0.050668066813894234
+        },
+        {
+            "from": "compute_log",
+            "to": "dataset_config",
+            "strength": 0.046769020743837895
+        },
+        {
+            "from": "dataset_config",
+            "to": "log_model_parameters",
+            "strength": 0.0325921819484746
+        },
+        {
+            "from": "log_model_parameters",
+            "to": "model_name",
+            "strength": 0.018228959710782155
+        },
+        {
+            "from": "model_name",
+            "to": "total_tokens",
+            "strength": 0.015855693533055753
+        },
+        {
+            "from": "total_tokens",
+            "to": "num_epochs",
+            "strength": 0.010803868609201949
+        },
+        {
+            "from": "num_epochs",
+            "to": "model_family",
+            "strength": 0.010676576861100838
+        },
+        {
+            "from": "model_family",
+            "to": "learning_rate",
+            "strength": 0.00854187371417368
+        },
+        {
+            "from": "learning_rate",
+            "to": "pue",
+            "strength": 0.0031862047697922996
+        },
+        {
+            "from": "pue",
+            "to": "num_train_samples",
+            "strength": 0.0022047239055397
+        },
+        {
+            "from": "num_train_samples",
+            "to": "fp16",
+            "strength": 0.0016397005628849511
+        },
+        {
+            "from": "fp16",
+            "to": "gpu_type",
+            "strength": 0.0009104994218272431
+        },
+        {
+            "from": "gpu_type",
+            "to": "num_gpus",
+            "strength": 0.0005925366900138492
+        },
+        {
+            "from": "num_gpus",
+            "to": "model_parameters",
+            "strength": 0.0004370200771513557
+        },
+        {
+            "from": "model_parameters",
+            "to": "gradient_accumulation_steps",
+            "strength": 0.00035232657328422947
+        },
+        {
+            "from": "gradient_accumulation_steps",
+            "to": "size_cluster",
+            "strength": 0.0003297070953085185
+        },
+        {
+            "from": "size_cluster",
+            "to": "compute_load",
+            "strength": 7.910269921323296e-05
+        },
+        {
+            "from": "compute_load",
+            "to": "gpu_power_watts",
+            "strength": 4.4958370925554915e-06
+        }
+    ]
+}

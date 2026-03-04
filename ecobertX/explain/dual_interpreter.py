@@ -1,51 +1,29 @@
-def interpret_prediction_dual(raw_row, explainer):
+from explain.causal_reasoning import generate_causal_reason
+
+
+def interpret_prediction_full(raw_row, explainer):
 
     pred = explainer.predict(raw_row)
-    reasons = explainer.explain_prediction(raw_row)
+
+    explanation = explainer.explain_prediction_detailed(raw_row)
+
+    confidence = explainer.confidence_score(raw_row)
 
     print("\n===================================")
-    print(f"🔹 Predicted CO₂: {pred:.5f} kg")
+    print("EcoBERT-X MECHANISTIC EXPLANATION")
     print("===================================\n")
 
-    # Remove unwanted columns
-    reasons = [r for r in reasons if "Unnamed" not in r["feature"]]
+    print(f"Predicted CO₂: {pred:.6f} kg")
+    print(f"Confidence Score: {confidence:.3f}\n")
 
-    # Sort by importance
-    reasons = sorted(reasons, key=lambda x: abs(x["impact"]), reverse=True)
+    print("Causal Explanation:\n")
 
-    # ---------- SCIENTIFIC ----------
-    print("📘 SCIENTIFIC INTERPRETATION\n")
+    for e in explanation[:10]:
 
-    for r in reasons[:10]:
-        sign = "↑ increases" if r["impact"] > 0 else "↓ decreases"
-        print(f"{r['feature']:<25} {sign} prediction by {abs(r['impact']):.4f}")
+        reason = generate_causal_reason(
+            e["feature"],
+            e["value"],
+            e["impact"]
+        )
 
-    # ---------- FRIENDLY ----------
-    print("\n😊 HUMAN-FRIENDLY EXPLANATION\n")
-
-    for r in reasons[:10]:
-        verb = "raised emissions by" if r["impact"] > 0 else "lowered emissions by"
-        print(f"- {r['feature']} {verb} {abs(r['impact']):.4f}")
-
-    # ---------- SUMMARY ----------
-    inc = [r for r in reasons if r["impact"] > 0]
-    dec = [r for r in reasons if r["impact"] < 0]
-
-    print("\n🧠 SUMMARY\n")
-
-    if dec:
-        print("Main factors REDUCING emissions:")
-        for r in dec[:3]:
-            print(" •", r["feature"])
-
-    if inc:
-        print("\nMain factors INCREASING emissions:")
-        for r in inc[:3]:
-            print(" •", r["feature"])
-
-    print("\n📗 Responsible AI Note:")
-    print(
-        "This explanation converts the model's internal reasoning "
-        "into both scientific and human-readable forms, supporting "
-        "transparent carbon-aware NLP training."
-    )
+        print("•", reason)
